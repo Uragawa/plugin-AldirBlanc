@@ -159,23 +159,21 @@ class Plugin extends \MapasCulturais\Plugin
             if(($requestedOpportunity->canUser('@control')) && in_array($requestedOpportunity->id,$opportunities_ids) ) {
                 $app->view->enqueueScript('app', 'aldirblanc', 'aldirblanc/app.js');
                 $selected = false;
+                $inciso = 3;
                 if (in_array($requestedOpportunity->id, $inciso1Ids)){
                     $inciso = 1;
                 }
                 else if (in_array($requestedOpportunity->id, $inciso2Ids)){
-                    $inciso = 2;
-
-                    //Busca as inscrições selecionadas (ststus 10)
-                    $registrationSelected = $app->repo("Registration")->findBy([
-                        'opportunity' => $requestedOpportunity->id,
-                        'status' => 10
-                    ]);
-                    
-                    //Flag que define se o botão do exportador genérico deve aparecer ou não                   
-                    if($registrationSelected){
-                        $selected = true;
-                    }
-                    
+                    $inciso = 2;                    
+                }
+                //Busca as inscrições selecionadas (ststus 10)
+                $registrationSelected = $app->repo("Registration")->findBy([
+                    'opportunity' => $requestedOpportunity->id,
+                    'status' => 10
+                ]);                    
+                //Flag que define se o botão do exportador genérico deve aparecer ou não                   
+                if ($registrationSelected){
+                    $selected = true;
                 }
                 $this->part('aldirblanc/csv-button', ['inciso' => $inciso, 'opportunity' =>$opportunity, 'qtdSelected' => $selected]);
             }

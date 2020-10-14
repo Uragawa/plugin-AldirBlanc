@@ -618,7 +618,18 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         fwrite($stream, $txt_data);
 
         fclose($stream);
+    }
 
+    public function ALL_exportCnab240Inciso2()
+    {
+        echo "Not implemented.";
+        die();
+    }
+
+    public function ALL_exportCnab240Inciso3()
+    {
+        echo "Not implemented.";
+        die();
     }
 
     //###################################################################################################################################
