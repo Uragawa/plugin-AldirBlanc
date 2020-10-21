@@ -424,273 +424,6 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             die();
         }
 
-        $mappedHeader1 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'USO_BANCO_12' => '',
-            'INSCRICAO_TIPO' => '',
-            'CPF_CNPJ_FONTE_PAG' => '',
-            'CONVENIO_BB1' => '',
-            'CONVENIO_BB2' => '',
-            'CONVENIO_BB3' => '',
-            'CONVENIO_BB4' => '',
-            'AGENCIA' => '',
-            'AGENCIA_DIGITO' => '',
-            'CONTA' => '',
-            'CONTA_DIGITO' => '',
-            'USO_BANCO_20' => '',
-            'NOME_EMPRESA' => '',
-            'NOME_BANCO' => '',
-            'USO_BANCO_23' => '',
-            'CODIGO_REMESSA' => '',
-            'DATA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
-                return $date->format('d/m/Y');
-            },
-            'HORA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
-                return $date->format('H:i:s');
-            },
-            'NUM_SERQUNCIAL_ARQUIVO' => '',
-            'LAYOUT_ARQUIVO' => '',
-            'DENCIDADE_GER_ARQUIVO' => '',
-            'USO_BANCO_30' => '',
-            'USO_BANCO_31' => '',
-        ];
-
-        $mappedHeader2 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'OPERACAO' => '',
-            'SERVICO' => '',
-            'FORMA_LANCAMENTO' => '',
-            'LAYOUT_LOTE' => '',
-            'USO_BANCO_43' => '',
-            'INSCRICAO_TIPO' => '',
-            'INSCRICAO_NUMERO' => '',
-            'CONVENIO_BB1' => '',
-            'CONVENIO_BB2' => '',
-            'CONVENIO_BB3' => '',
-            'CONVENIO_BB4' => '',
-            'AGENCIA' => '',
-            'AGENCIA_DIGITO' => '',
-            'CONTA' => '',
-            'CONTA_DIGITO' => '',
-            'USO_BANCO_51' => '',
-            'NOME_EMPRESA' => '',
-            'USO_BANCO_40' => '',
-            'LOGRADOURO' => '',
-            'NUMERO' => '',
-            'COMPLEMENTO' => '',
-            'CIDADE' => '',
-            'CEP' => '',
-            'ESTADO' => '',
-            'USO_BANCO_60' => '',
-            'USO_BANCO_61' => '',
-        ];
-
-        $mappedDeletalhe1 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'NUMERO_REGISTRO' => '',
-            'SEGMENTO' => '',
-            'TIPO_MOVIMENTO' => '',
-            'CODIGO_MOVIMENTO' => '',
-            'CAMARA_CENTRALIZADORA' => '',
-            'BEN_CODIGO_BANCO' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                return $this->numberBank($registrations->$field_id);
-            },
-            'BEN_AGENCIA' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_AGENCIA']['field_id'];
-                return $registrations->$field_id;
-            },
-            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
-                return $registrations->$field_id;
-            },
-            'BEN_CONTA' => function ($registrations) use ($detahe1, $default) {
-                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                $numberBank = $this->numberBank($registrations->$temp);
-                $temp = $detahe1['TIPO_CONTA']['field_id'];
-                $typeAccount = $registrations->$temp;
-                $field_id = $detahe1['BEN_CONTA']['field_id'];
-                $account = $registrations->$field_id;
-
-                if ($numberBank = '001' && $typeAccount == $default['typesAccount']['poupanca']) {
-
-                    if (substr($account, 0, 3) != "510") {
-                        return "510" . $account;
-                    } else {
-
-                        return $account;
-
-                    }
-                } else {
-
-                    return $registrations->$field_id;
-                }
-
-                $field_id = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-
-            },
-            'BEN_CONTA_DIGITO' => function ($registrations) use ($detahe1, $default) {
-                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                $numberBank = $this->numberBank($registrations->$temp);
-
-                $temp = $detahe1['TIPO_CONTA']['field_id'];
-                $typeAccount = $registrations->$temp;
-
-                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-                $account = preg_replace('/[^0-9]/i', '', $registrations->$temp);
-
-                $digit = substr($account, -1);
-
-                if ($numberBank = '001' && $typeAccount == $default['typesAccount']['poupanca']) {
-
-                    if (substr($account, 0, 3) == "510") {
-                        return $digit;
-                    } else {
-
-                        return $default['savingsDigit'][$digit];
-
-                    }
-                } else {
-
-                    return $digit;
-                }
-
-            },
-            'BEN_DIGITO_CONTA_AGENCIA_80' => '',
-            'BEN_NOME' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_NOME']['field_id'];
-                return $registrations->$field_id;
-            },
-            'BEN_DOC_ATRIB_EMPRESA_82' => '',
-            'DATA_PAGAMENTO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
-                $date->add(new DateInterval('P1D'));
-                $weekday = $date->format('D');
-
-                $weekdayList = [
-                    'Mon' => true,
-                    'Tue' => true,
-                    'Wed' => true,
-                    'Thu' => true,
-                    'Fri' => true,
-                    'Sat' => false,
-                    'Sun' => false,
-                ];
-
-                while (!$weekdayList[$weekday]) {
-                    $date->add(new DateInterval('P1D'));
-                    $weekday = $date->format('D');
-                }
-
-                return $date->format('d/m/Y');
-            },
-            'TIPO_MOEDA' => '',
-            'USO_BANCO_85' => '',
-            'VALOR_INTEIRO' => function ($registrations) use ($detahe1) {
-                $valor = '100,50';
-                $valor = preg_replace('/[^0-9]/i', '', $valor);
-
-                return $valor;
-            },
-            'USO_BANCO_88' => '',
-            'USO_BANCO_89' => '',
-            'USO_BANCO_90' => '',
-            'CODIGO_FINALIDADE_TED' => function ($registrations) use ($detahe1) {
-                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                $numberBank = $this->numberBank($registrations->$temp);
-                if ($numberBank != "001") {
-                    return '10';
-                } else {
-                    return "";
-                }
-            },
-            'USO_BANCO_92' => '',
-            'USO_BANCO_93' => '',
-            'TIPO_CONTA' => '',
-        ];
-
-        $mappedDeletalhe2 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'NUMERO_REGISTRO' => '',
-            'SEGMENTO' => '',
-            'USO_BANCO_104' => '',
-            'BEN_TIPO_DOC' => '',
-            'BEN_CPF' => '',
-            'BEN_ENDERECO_LOGRADOURO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_LOGRADOURO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Nome_Logradouro'];
-            },
-            'BEN_ENDERECO_NUMERO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_NUMERO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Num'];
-            },
-            'BEN_ENDERECO_COMPLEMENTO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_COMPLEMENTO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Complemento'];
-            },
-            'BEN_ENDERECO_BAIRRO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_BAIRRO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Bairro'];
-            },
-            'BEN_ENDERECO_CIDADE' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_CIDADE']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Municipio'];
-            },
-            'BEN_ENDERECO_CEP' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_CEP']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_CEP'];
-            },
-            'BEN_ENDERECO_ESTADO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_ESTADO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Estado'];
-            },
-            'USO_BANCO_114' => '',
-            'USO_BANCO_115' => '',
-            'USO_BANCO_116' => '',
-            'USO_BANCO_117' => '',
-        ];
-
-        $mappedTrailer1 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'USO_BANCO_126' => '',
-            'QUANTIDADE_REGISTROS_127' => '',
-            'VALOR_TOTAL_DOC_INTEIRO' => '',
-            'VALOR_TOTAL_DOC_DECIMAL' => '',
-            'USO_BANCO_130' => '',
-            'USO_BANCO_131' => '',
-            'USO_BANCO_132' => '',
-        ];
-
-        $mappedTrailer2 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'USO_BANCO_141' => '',
-            'QUANTIDADE_LOTES-ARQUIVO' => '',
-            'QUANTIDADE_REGISTROS_ARQUIVOS' => '',
-            'USO_BANCO_144' => '',
-            'USO_BANCO_145' => '',
-        ];
-
         /**
          * Separa os registros em 3 categorias
          * $recordsBBPoupanca =  Contas polpança BB
@@ -721,6 +454,16 @@ class Remessas extends \MapasCulturais\Controllers\Registration
          * faz a pesquisa atravez do array mapped. Caso contrario busca o valor default da configuração
          *
          */
+        $mappings = $this->getMappings($detahe1, $detahe2, $default);
+        $mappedHeader1 = $mappings["headerFile"];
+        $mappedHeader2 = $mappings["headerBatch"];
+        $mappedDeletalhe1 = $mappings["detailA"];
+        $mappedDeletalhe2 = $mappings["detailB"];
+        $mappedTrailer1 = $mappings["trailerBatch"];
+        $mappedTrailer2 = $mappings["trailerFile"];
+
+        $newline = "\r\n";
+
         $txt_data = "";
         $numLote = 0;
         $totaLotes = 0;
@@ -730,7 +473,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $txt_data = $this->mountTxt($header1, $mappedHeader1, $txt_data, null, null);
         $totalRegistros += 1;
 
-        $txt_data .= "\r\n";
+        $txt_data .= $newline;
 
         /**
          * Inicio banco do Brasil Corrente
@@ -746,7 +489,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ];
 
             $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $lotBBCorrente += 1;
 
@@ -761,10 +504,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     'LOTE' => $numLote,
                 ];
                 $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $lotBBCorrente += 2;
 
@@ -781,7 +524,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ];
 
             $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
             $totalRegistros += $lotBBCorrente;
         }
 
@@ -798,7 +541,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
             $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $lotBBPoupanca += 1;
 
@@ -814,10 +557,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 ];
 
                 $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $lotBBPoupanca += 2;
 
@@ -834,7 +577,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ];
 
             $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $totalRegistros += $lotBBPoupanca;
         }
@@ -870,10 +613,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 ];
                 $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
 
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
                 $lotOthers += 2;
 
             }
@@ -888,7 +631,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
             $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
             $totalRegistros += $lotOthers;
         }
 
@@ -1102,272 +845,13 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             die();
         }
 
-        $mappedHeader1 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'USO_BANCO_12' => '',
-            'INSCRICAO_TIPO' => '',
-            'CPF_CNPJ_FONTE_PAG' => '',
-            'CONVENIO_BB1' => '',
-            'CONVENIO_BB2' => '',
-            'CONVENIO_BB3' => '',
-            'CONVENIO_BB4' => '',
-            'AGENCIA' => '',
-            'AGENCIA_DIGITO' => '',
-            'CONTA' => '',
-            'CONTA_DIGITO' => '',
-            'USO_BANCO_20' => '',
-            'NOME_EMPRESA' => '',
-            'NOME_BANCO' => '',
-            'USO_BANCO_23' => '',
-            'CODIGO_REMESSA' => '',
-            'DATA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
-                return $date->format('d/m/Y');
-            },
-            'HORA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
-                return $date->format('H:i:s');
-            },
-            'NUM_SERQUNCIAL_ARQUIVO' => '',
-            'LAYOUT_ARQUIVO' => '',
-            'DENCIDADE_GER_ARQUIVO' => '',
-            'USO_BANCO_30' => '',
-            'USO_BANCO_31' => '',
-        ];
-
-        $mappedHeader2 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'OPERACAO' => '',
-            'SERVICO' => '',
-            'FORMA_LANCAMENTO' => '',
-            'LAYOUT_LOTE' => '',
-            'USO_BANCO_43' => '',
-            'INSCRICAO_TIPO' => '',
-            'INSCRICAO_NUMERO' => '',
-            'CONVENIO_BB1' => '',
-            'CONVENIO_BB2' => '',
-            'CONVENIO_BB3' => '',
-            'CONVENIO_BB4' => '',
-            'AGENCIA' => '',
-            'AGENCIA_DIGITO' => '',
-            'CONTA' => '',
-            'CONTA_DIGITO' => '',
-            'USO_BANCO_51' => '',
-            'NOME_EMPRESA' => '',
-            'USO_BANCO_40' => '',
-            'LOGRADOURO' => '',
-            'NUMERO' => '',
-            'COMPLEMENTO' => '',
-            'CIDADE' => '',
-            'CEP' => '',
-            'ESTADO' => '',
-            'USO_BANCO_60' => '',
-            'USO_BANCO_61' => '',
-        ];
-
-        $mappedDeletalhe1 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'NUMERO_REGISTRO' => '',
-            'SEGMENTO' => '',
-            'TIPO_MOVIMENTO' => '',
-            'CODIGO_MOVIMENTO' => '',
-            'CAMARA_CENTRALIZADORA' => '',
-            'BEN_CODIGO_BANCO' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                return $this->numberBank($registrations->$field_id);
-            },
-            'BEN_AGENCIA' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_AGENCIA']['field_id'];
-                return $registrations->$field_id;
-            },
-            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
-                return $registrations->$field_id;
-            },
-            'BEN_CONTA' => function ($registrations) use ($detahe1, $default) {
-                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                $numberBank = $this->numberBank($registrations->$temp);
-                $temp = $detahe1['TIPO_CONTA']['field_id'];
-                $typeAccount = $registrations->$temp;
-                $field_id = $detahe1['BEN_CONTA']['field_id'];
-                $account = $registrations->$field_id;
-
-                if ($numberBank = '001' && $typeAccount == $default['typesAccount']['poupanca']) {
-
-                    if (substr($account, 0, 3) != "510") {
-                        return "510" . $account;
-                    } else {
-
-                        return $account;
-
-                    }
-                } else {
-
-                    return $registrations->$field_id;
-                }
-
-                $field_id = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-
-            },
-            'BEN_CONTA_DIGITO' => function ($registrations) use ($detahe1, $default) {
-                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                $numberBank = $this->numberBank($registrations->$temp);
-
-                $temp = $detahe1['TIPO_CONTA']['field_id'];
-                $typeAccount = $registrations->$temp;
-
-                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-                $account = preg_replace('/[^0-9]/i', '', $registrations->$temp);
-
-                $digit = substr($account, -1);
-
-                if ($numberBank = '001' && $typeAccount == $default['typesAccount']['poupanca']) {
-
-                    if (substr($account, 0, 3) == "510") {
-                        return $digit;
-                    } else {
-
-                        return $default['savingsDigit'][$digit];
-
-                    }
-                } else {
-
-                    return $digit;
-                }
-
-            },
-            'BEN_DIGITO_CONTA_AGENCIA_80' => '',
-            'BEN_NOME' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_NOME']['field_id'];
-                return $registrations->$field_id;
-            },
-            'BEN_DOC_ATRIB_EMPRESA_82' => '',
-            'DATA_PAGAMENTO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
-                $date->add(new DateInterval('P1D'));
-                $weekday = $date->format('D');
-
-                $weekdayList = [
-                    'Mon' => true,
-                    'Tue' => true,
-                    'Wed' => true,
-                    'Thu' => true,
-                    'Fri' => true,
-                    'Sat' => false,
-                    'Sun' => false,
-                ];
-
-                while (!$weekdayList[$weekday]) {
-                    $date->add(new DateInterval('P1D'));
-                    $weekday = $date->format('D');
-                }
-
-                return $date->format('d/m/Y');
-            },
-            'TIPO_MOEDA' => '',
-            'USO_BANCO_85' => '',
-            'VALOR_INTEIRO' => function ($registrations) use ($detahe1) {
-                $valor = '100,98';
-                $valor = preg_replace('/[^0-9]/i', '', $valor);
-
-                return $valor;
-            },
-            'USO_BANCO_88' => '',
-            'USO_BANCO_89' => '',
-            'USO_BANCO_90' => '',
-            'CODIGO_FINALIDADE_TED' => function ($registrations) use ($detahe1) {
-                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
-                $numberBank = $this->numberBank($registrations->$temp);
-                if ($numberBank != "001") {
-                    return '10';
-                } else {
-                    return "";
-                }
-            },
-            'USO_BANCO_92' => '',
-            'USO_BANCO_93' => '',
-            'TIPO_CONTA' => '',
-        ];
-
-        $mappedDeletalhe2 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'NUMERO_REGISTRO' => '',
-            'SEGMENTO' => '',
-            'USO_BANCO_104' => '',
-            'BEN_TIPO_DOC' => '',
-            'BEN_CPF' => '',
-            'BEN_ENDERECO_LOGRADOURO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_LOGRADOURO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Nome_Logradouro'];
-            },
-            'BEN_ENDERECO_NUMERO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_NUMERO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Num'];
-            },
-            'BEN_ENDERECO_COMPLEMENTO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_COMPLEMENTO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Complemento'];
-            },
-            'BEN_ENDERECO_BAIRRO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_BAIRRO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Bairro'];
-            },
-            'BEN_ENDERECO_CIDADE' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_CIDADE']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Municipio'];
-            },
-            'BEN_ENDERECO_CEP' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_CEP']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_CEP'];
-            },
-            'BEN_ENDERECO_ESTADO' => function ($registrations) use ($detahe2) {
-                $field_id = $detahe2['BEN_ENDERECO_ESTADO']['field_id'];
-                $data = $registrations->$field_id;
-                return $data['En_Estado'];
-            },
-            'USO_BANCO_114' => '',
-            'USO_BANCO_115' => '',
-            'USO_BANCO_116' => '',
-            'USO_BANCO_117' => '',
-        ];
-
-        $mappedTrailer1 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'USO_BANCO_126' => '',
-            'QUANTIDADE_REGISTROS_127' => '',
-            'VALOR_TOTAL_DOC_INTEIRO' => '',
-            'VALOR_TOTAL_DOC_DECIMAL' => '',
-            'USO_BANCO_130' => '',
-            'USO_BANCO_131' => '',
-            'USO_BANCO_132' => '',
-        ];
-
-        $mappedTrailer2 = [
-            'BANCO' => '',
-            'LOTE' => '',
-            'REGISTRO' => '',
-            'USO_BANCO_141' => '',
-            'QUANTIDADE_LOTES-ARQUIVO' => '',
-            'QUANTIDADE_REGISTROS_ARQUIVOS' => '',
-            'USO_BANCO_144' => '',
-            'USO_BANCO_145' => '',
-        ];
+        $mappings = $this->getMappings($detahe1, $detahe2, $default);
+        $mappedHeader1 = $mappings["headerFile"];
+        $mappedHeader2 = $mappings["headerBatch"];
+        $mappedDeletalhe1 = $mappings["detailA"];
+        $mappedDeletalhe2 = $mappings["detailB"];
+        $mappedTrailer1 = $mappings["trailerBatch"];
+        $mappedTrailer2 = $mappings["trailerFile"];
 
         /**
          * Separa os registros em 3 categorias
@@ -1399,6 +883,8 @@ class Remessas extends \MapasCulturais\Controllers\Registration
          * faz a pesquisa atravez do array mapped. Caso contrario busca o valor default da configuração
          *
          */
+        $newline = "\r\n";
+
         $txt_data = "";
         $numLote = 0;
         $totaLotes = 0;
@@ -1408,7 +894,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $txt_data = $this->mountTxt($header1, $mappedHeader1, $txt_data, null, null);
         $totalRegistros += 1;
 
-        $txt_data .= "\r\n";
+        $txt_data .= $newline;
 
         /**
          * Inicio banco do Brasil Corrente
@@ -1424,7 +910,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ];
 
             $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $lotBBCorrente += 1;
 
@@ -1439,10 +925,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     'LOTE' => $numLote,
                 ];
                 $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $lotBBCorrente += 2;
 
@@ -1459,7 +945,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ];
 
             $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
             $totalRegistros += $lotBBCorrente;
         }
 
@@ -1476,7 +962,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
             $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $lotBBPoupanca += 1;
 
@@ -1492,10 +978,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 ];
 
                 $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $lotBBPoupanca += 2;
 
@@ -1512,7 +998,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ];
 
             $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $totalRegistros += $lotBBPoupanca;
         }
@@ -1532,7 +1018,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
             $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
 
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
 
             $lotOthers += 1;
 
@@ -1548,10 +1034,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 ];
                 $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
 
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
 
                 $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
-                $txt_data .= "\r\n";
+                $txt_data .= $newline;
                 $lotOthers += 2;
 
             }
@@ -1566,7 +1052,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
             $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
-            $txt_data .= "\r\n";
+            $txt_data .= $newline;
             $totalRegistros += $lotOthers;
         }
 
@@ -1617,30 +1103,262 @@ class Remessas extends \MapasCulturais\Controllers\Registration
      */
     private function createString($value)
     {
-
         $data = "";
-        $qtd = strlen($value['default']);
         $length = $value['length'];
         $type = $value['type'];
-        $diff = 0;
-        $complet = "";
-
-        if ($qtd < $length) {
-            $diff = $length - $qtd;
-        }
-
         $value['default'] = Normalizer::normalize($value['default'], Normalizer::FORM_D);
         $value['default'] = preg_replace('/[^a-z0-9 ]/i', '', $value['default']);
-
         if ($type === 'int') {
             $data .= str_pad($value['default'], $length, '0', STR_PAD_LEFT);
         } else {
             $data .= str_pad($value['default'], $length, " ");
         }
-
         return substr($data, 0, $length);
     }
 
+    private function getMappings($detail1, $detail2, $default)
+    {
+        return [
+            "headerFile" => [
+                'BANCO' => '',
+                'LOTE' => '',
+                'REGISTRO' => '',
+                'USO_BANCO_12' => '',
+                'INSCRICAO_TIPO' => '',
+                'CPF_CNPJ_FONTE_PAG' => '',
+                'CONVENIO_BB1' => '',
+                'CONVENIO_BB2' => '',
+                'CONVENIO_BB3' => '',
+                'CONVENIO_BB4' => '',
+                'AGENCIA' => '',
+                'AGENCIA_DIGITO' => '',
+                'CONTA' => '',
+                'CONTA_DIGITO' => '',
+                'USO_BANCO_20' => '',
+                'NOME_EMPRESA' => '',
+                'NOME_BANCO' => '',
+                'USO_BANCO_23' => '',
+                'CODIGO_REMESSA' => '',
+                'DATA_GER_ARQUIVO' => function($registration) use ($detail1) {
+                    $date = new DateTime();                
+                    return $date->format('d/m/Y');
+                },
+                'HORA_GER_ARQUIVO' => function($registration) use ($detail1) {
+                    $date = new DateTime();                
+                    return $date->format('H:i:s');
+                },
+                'NUM_SERQUNCIAL_ARQUIVO' => '',
+                'LAYOUT_ARQUIVO' => '',
+                'DENCIDADE_GER_ARQUIVO' => '',
+                'USO_BANCO_30' => '',
+                'USO_BANCO_31' => '',
+            ],
+            "headerBatch" => [
+                'BANCO' => '',
+                'LOTE' => '',
+                'REGISTRO' => '',
+                'OPERACAO' => '',
+                'SERVICO' => '',
+                'FORMA_LANCAMENTO' => '',
+                'LAYOUT_LOTE' => '',
+                'USO_BANCO_43' => '',
+                'INSCRICAO_TIPO' => '',
+                'INSCRICAO_NUMERO' => '',
+                'CONVENIO_BB1' => '',
+                'CONVENIO_BB2' => '',
+                'CONVENIO_BB3' => '',
+                'CONVENIO_BB4' => '',
+                'AGENCIA' => '',
+                'AGENCIA_DIGITO' => '',
+                'CONTA' => '',
+                'CONTA_DIGITO' => '',
+                'USO_BANCO_51' => '',
+                'NOME_EMPRESA' => '',
+                'USO_BANCO_40' => '',
+                'LOGRADOURO' => '',
+                'NUMERO' => '',
+                'COMPLEMENTO' => '',
+                'CIDADE' => '',
+                'CEP' => '',
+                'ESTADO' => '',
+                'USO_BANCO_60' => '',
+                'USO_BANCO_61' => '',
+            ],
+            "detailA" => [
+                'BANCO' => '',
+                'LOTE' => '',
+                'REGISTRO' => '',
+                'NUMERO_REGISTRO' => '',
+                'SEGMENTO' => '',
+                'TIPO_MOVIMENTO' => '',
+                'CODIGO_MOVIMENTO' => '',
+                'CAMARA_CENTRALIZADORA' => '',
+                'BEN_CODIGO_BANCO' =>  function($registration) use ($detail1) {
+                    $field_id = $detail1['BEN_CODIGO_BANCO']['field_id'];
+                    return $this->numberBank($registration->$field_id);
+                },
+                'BEN_AGENCIA' => function($registration) use ($detail1) {
+                    $field_id = $detail1['BEN_AGENCIA']['field_id'];
+                    return $registration->$field_id;
+                },
+                'BEN_AGENCIA_DIGITO' => function($registration) use ($detail1) {
+                    $field_id = $detail1['BEN_AGENCIA_DIGITO']['field_id'];
+                    return $registration->$field_id;
+                },
+                'BEN_CONTA' => function($registration) use ($detail1, $default) {
+                    $field_id = $detail1['BEN_CODIGO_BANCO']['field_id'];
+                    $numBank = $this->numberBank($registration->field_id);
+                    $field_id = $detail1['TIPO_CONTA']['field_id'];
+                    $typeAccount = $registration->$field_id;
+                    $field_id = $detail1['BEN_CONTA']['field_id'];
+                    $account = $registration->$field_id;
+                    if (($numBank == "001") &&
+                        ($typeAccount == $default['typesAccount']['poupanca'])) {
+                        if (substr($account, 0, 3) != "510") {
+                            return ("510" . $account);
+                        }
+                        return $account;
+                    }
+                    return $registration->$field_id;
+                },
+                'BEN_CONTA_DIGITO' => function($registration) use ($detail1, $default) {
+                    $field_id = $detail1['BEN_CODIGO_BANCO']['field_id'];
+                    $numBank = $this->numberBank($registration->field_id);
+                    $field_id = $detail1['TIPO_CONTA']['field_id'];
+                    $typeAccount = $registration->$field_id;
+                    $field_id = $detail1['BEN_CONTA_DIGITO']['field_id'];
+                    $account = preg_replace('/[^0-9]/i', '', $registration->$field_id);
+                    $digit = substr($account, -1);
+                    if (($numBank == "001") &&
+                        ($typeAccount == $default['typesAccount']['poupanca'])) {
+                        if (substr($account, 0, 3) == "510") {
+                            return $digit;
+                        }
+                        return $default['savingsDigit'][$digit];
+                    }
+                    return $digit;
+                },
+                'BEN_DIGITO_CONTA_AGENCIA_80' => '',
+                'BEN_NOME' => function ($registration) use ($detail1) {
+                    $field_id = $detail1['BEN_NOME']['field_id'];
+                    return $registration->$field_id;
+                },
+                'BEN_DOC_ATRIB_EMPRESA_82' => '',
+                'DATA_PAGAMENTO' => function ($registration) {
+                    $date = new DateTime();
+                    $date->add(new DateInterval('P1D'));
+                    $weekday = $date->format('D');
+                    $weekdayList = [
+                        'Mon' => true,
+                        'Tue' => true,
+                        'Wed' => true,
+                        'Thu' => true,
+                        'Fri' => true,
+                        'Sat' => false,
+                        'Sun' => false,
+                    ];
+                    while (!$weekdayList[$weekday]) {
+                        $date->add(new DateInterval('P1D'));
+                        $weekday = $date->format('D');
+                    }
+                    return $date->format('d/m/Y');
+                },
+                'TIPO_MOEDA' => '',
+                'USO_BANCO_85' => '',
+                'VALOR_INTEIRO' => function ($registration) use ($detail1) {
+                    $amount = '100,50';
+                    $amount = preg_replace('/[^0-9]/i', '', $amount);
+                    return $amount;
+                },
+                'USO_BANCO_88' => '',
+                'USO_BANCO_89' => '',
+                'USO_BANCO_90' => '',
+                'CODIGO_FINALIDADE_TED' => function ($registration) use ($detail1) {
+                    $temp = $detail1['BEN_CODIGO_BANCO']['field_id'];
+                    $numberBank = $this->numberBank($registration->$temp);
+                    if ($numberBank != "001") {
+                        return "10";
+                    }
+                    return "";
+                },
+                'USO_BANCO_92' => '',
+                'USO_BANCO_93' => '',
+                'TIPO_CONTA' => '',
+            ],
+            "detailB" => [
+                'BANCO' => '',
+                'LOTE' => '',
+                'REGISTRO' => '',
+                'NUMERO_REGISTRO' => '',
+                'SEGMENTO' => '',
+                'USO_BANCO_104' => '',
+                'BEN_TIPO_DOC' => '',
+                'BEN_CPF' => '',
+                'BEN_ENDERECO_LOGRADOURO' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_LOGRADOURO']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_Nome_Logradouro'];
+                },
+                'BEN_ENDERECO_NUMERO' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_NUMERO']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_Num'];
+                },
+                'BEN_ENDERECO_COMPLEMENTO' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_COMPLEMENTO']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_Complemento'];
+                },
+                'BEN_ENDERECO_BAIRRO' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_BAIRRO']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_Bairro'];
+                },
+                'BEN_ENDERECO_CIDADE' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_CIDADE']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_Municipio'];
+                },
+                'BEN_ENDERECO_CEP' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_CEP']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_CEP'];
+                },
+                'BEN_ENDERECO_ESTADO' => function ($registration) use ($detail2) {
+                    $field_id = $detail2['BEN_ENDERECO_ESTADO']['field_id'];
+                    $data = $registration->$field_id;
+                    return $data['En_Estado'];
+                },
+                'USO_BANCO_114' => '',
+                'USO_BANCO_115' => '',
+                'USO_BANCO_116' => '',
+                'USO_BANCO_117' => '',
+            ],
+            "trailerBatch" => [
+                'BANCO' => '',
+                'LOTE' => '',
+                'REGISTRO' => '',
+                'USO_BANCO_126' => '',
+                'QUANTIDADE_REGISTROS_127' => '',
+                'VALOR_TOTAL_DOC_INTEIRO' => '',
+                'VALOR_TOTAL_DOC_DECIMAL' => '',
+                'USO_BANCO_130' => '',
+                'USO_BANCO_131' => '',
+                'USO_BANCO_132' => '',
+            ],
+            "trailerFile" => [
+                'BANCO' => '',
+                'LOTE' => '',
+                'REGISTRO' => '',
+                'USO_BANCO_141' => '',
+                'QUANTIDADE_LOTES-ARQUIVO' => '',
+                'QUANTIDADE_REGISTROS_ARQUIVOS' => '',
+                'USO_BANCO_144' => '',
+                'USO_BANCO_145' => '',
+            ]
+        ];
+    }
+    
     /*
      * Função para retornar o número do banco, levando como base de pesquisa o nome do banco
      * Todos os textos que entram pelo parâmetro $bankName, são primeiro colocados em lowercase em seguida a primeira letra
@@ -1649,46 +1367,17 @@ class Remessas extends \MapasCulturais\Controllers\Registration
      */
     private function numberBank($bankName)
     {
-
-        $bankList = [
-            'Bco Do Brasil S.A' => '001',
-            'Bco Da Amazonia S.A' => '003',
-            'Bco Do Nordeste Do Brasil S.A' => '004',
-            'Bco Banestes S.A' => '021',
-            'Bco Santander (Brasil) S.A' => '033',
-            'Bco Do Est. Do Pa S.A' => '037',
-            'Bco Do Estado Do Rs S.A' => '041',
-            'Bco Do Est. De Se S.A' => '047',
-            'Brb - Bco De Brasilia S.A' => '070',
-            'Banco Inter' => '077',
-            'Bco Da China Brasil S.A' => '083',
-            'Caixa Economica Federal' => '104',
-            'Banco Btg Pactual S.A' => '208',
-            'Banco Original' => '212',
-            'Bco Bradesco S.A ' => '237',
-            'Bco Bmg S.A' => '318',
-            'Itaú Unibanco S.A' => '341',
-            'Bco Safra S.A' => '422',
-            'Banco Pan' => '623',
-            'BR Partners BI' => '666',
-        ];
-
-        $bankName = Normalizer::normalize($bankName, Normalizer::FORM_D);
-        $bankName = preg_replace('/[^a-z0-9 ]/i', '', $bankName);
-
+        $bankList = $this->config["config-bankdata"]["byName"];
         $return = "";
+        $normdBank = Normalizer::normalize($bankName, Normalizer::FORM_D);
+        $normdBank = strtolower(preg_replace("/[^a-z0-9 ]/i", "", $normdBank));
         foreach ($bankList as $key => $value) {
-
-            $temp = Normalizer::normalize($key, Normalizer::FORM_D);
-            $temp = preg_replace('/[^a-z0-9 ]/i', '', $temp);
-
-            if (strtolower($bankName) == strtolower($temp)) {
+            if ($key == $normdBank) {
                 $return = $value;
+                break;
             }
         }
-
         return $return;
-
     }
 
     /**

@@ -62,7 +62,7 @@ class Plugin extends \MapasCulturais\Plugin
             'csv_generic_inciso2' => require_once env('AB_CSV_GENERIC_INCISO1', __DIR__ . '/config-csv-generic-inciso2.php'),
             'config-cnab240-inciso1' => require_once env('AB_TXT_CANAB240_INCISO1', __DIR__ . '/config-cnab240-inciso1.php'),
             'config-cnab240-inciso2' => require_once env('AB_TXT_CANAB240_INCISO2', __DIR__ . '/config-cnab240-inciso2.php'),
-                        
+            'config-bankdata' => require_once env('AB_CONFIG_BANKDATA', __DIR__ . '/config-bankdata.php'),
 
             // só libera para os homologadores as inscrićões que já tenham sido validadas pelos validadores configurados
             'homologacao_requer_validacao' => (array) json_decode(env('HOMOLOG_REQ_VALIDACOES', '[]')),
