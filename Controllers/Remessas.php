@@ -1149,7 +1149,6 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             Registration::STATUS_SENT,
         ];
         // $reportOut = "";
-        $report["recoveredOperation"] = [];
         $report["noValidationRules"] = [];
         $report["missingBasicData"] = [];
         $report["invalid"] = [];
@@ -1785,8 +1784,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     return Remessas::VALIDATION_MISSING_DATA;
                 }
             }
-            if (!$this->verifyCannedField($rules["operation"], $operation,
-                                          ["account" => $account])) {
+            if (!$this->verifyCannedField($rules["operation"], $operation)) {
                 $result |= Remessas::VALIDATION_FAILED_OPERATION;
             }
         }
@@ -1850,6 +1848,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             }
             if (!$this->verifyFieldSize($value, $maxLen, $strict)) {
                 return false;
+            }
+            // aplica regra de valores fixos se existir
+            if (isset($rules["values"])) {
+                return $this->verifyCannedField($rules, $value);
             }
             // aplica regra regex se existir
             if (isset($rules["regex"])) {
