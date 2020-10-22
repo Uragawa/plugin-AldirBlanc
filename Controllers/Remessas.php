@@ -21,6 +21,13 @@ use Normalizer;
 // class AldirBlanc extends \MapasCulturais\Controllers\EntityController {
 class Remessas extends \MapasCulturais\Controllers\Registration
 {
+    const VALIDATION_MISSING_DATA = -2;
+    const VALIDATION_NORULE = -1;
+    const VALIDATION_PASSED = 0;
+    const VALIDATION_FAILED_BRANCH = 1;
+    const VALIDATION_FAILED_ACCOUNT = 2;
+    const VALIDATION_FAILED_OPERATION = 4;
+
     protected $config = [];
 
     public function __construct()
@@ -651,9 +658,9 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         /**
          * cria o arquivo no servidor e insere o conteuto da váriavel $txt_data
          */
-        $file_name = 'inciso1-cnab240-' . md5(json_encode($txt_data)) . '.txt';        
+        $file_name = 'inciso1-cnab240-' . md5(json_encode($txt_data)) . '.txt';
 
-        $dir = PRIVATE_FILES_PATH . 'aldirblanc/inciso1/remessas/cnab240/';   
+        $dir = PRIVATE_FILES_PATH . 'aldirblanc/inciso1/remessas/cnab240/';
 
         $patch = $dir . $file_name;
 
@@ -762,48 +769,48 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $trailer1 = $txt_config['TRAILER1'];
         $trailer2 = $txt_config['TRAILER2'];
 
-        foreach($header1 as $key_config => $value){ 
+        foreach($header1 as $key_config => $value) {
             if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
-                $header1[$key_config]['field_id'] = $field_id;                
+                $header1[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($header2 as $key_config => $value){ 
+        foreach($header2 as $key_config => $value) {
             if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
-                $header2[$key_config]['field_id'] = $field_id;                
+                $header2[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($detahe1 as $key_config => $value){ 
+        foreach($detahe1 as $key_config => $value) {
             if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
-                $detahe1[$key_config]['field_id'] = $field_id;                
+                $detahe1[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($detahe2 as $key_config => $value){ 
+        foreach($detahe2 as $key_config => $value) {
             if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
-                $detahe2[$key_config]['field_id'] = $field_id;                
+                $detahe2[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($trailer1 as $key_config => $value){ 
+        foreach($trailer1 as $key_config => $value) {
             if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
-                $trailer1[$key_config]['field_id'] = $field_id;                
+                $trailer1[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($trailer2 as $key_config => $value){ 
+        foreach($trailer2 as $key_config => $value) {
             if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
-                $trailer2[$key_config]['field_id'] = $field_id;                
+                $trailer2[$key_config]['field_id'] = $field_id;
             }
-        }        
-        
+        }
+
 
         /**
          * Busca as inscrições com status 10 (Selecionada)
@@ -839,7 +846,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $registrations = $query->getResult();
 
         }
-        
+
         if (empty($registrations)) {
             echo "Não foram encontrados registros.";
             die();
@@ -1072,9 +1079,9 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         /**
          * cria o arquivo no servidor e insere o conteuto da váriavel $txt_data
          */
-        $file_name = 'inciso2-cnab240-' . md5(json_encode($txt_data)) . '.txt';      
+        $file_name = 'inciso2-cnab240-' . md5(json_encode($txt_data)) . '.txt';
 
-        $dir = PRIVATE_FILES_PATH . 'aldirblanc/inciso1/remessas/cnab240/';        
+        $dir = PRIVATE_FILES_PATH . 'aldirblanc/inciso1/remessas/cnab240/';
 
         $patch = $dir . $file_name;
 
@@ -1093,6 +1100,175 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         header('Pragma: no-cache');
         readfile($patch);
 
+    }
+
+    /**
+     * Obtém o relatório de formatos de dados bancários em JSON.
+     * Parâmetros da URL:
+     * - op=n[,...] - oportunidades a consultar (padrão: todas)
+     * - status=n[,...] - status a consultar (padrão: selecionadas e pendentes)
+     * - strict - exige que os números de agência e conta tenham tamanho exato,
+     *            não tenta obter a operação do número da conta
+     * Esta é uma chamada potencialmente lenta dependendo do banco de dados e
+     * parâmetros passados na URL.
+     */
+    public function ALL_bankingDataReport()
+    {
+        $this->requireAuthentication();
+        $app = App::i();
+        // processa parâmetros da URL
+        if (!empty($this->data)) {
+            // oportunidades
+            if (isset($this->data["op"])) {
+                $opportunityIDs = explode(",", $this->data["op"]);
+                foreach ($opportunityIDs as $oID) {
+                    if (!is_numeric($oID)) {
+                        throw new Exception("Oportunidade(s) inválida(s)");
+                    }
+                }
+            }
+            // statuses
+            if (isset($this->data["status"])) {
+                $statuses = explode(",", $this->data["status"]);
+                foreach ($statuses as $st) {
+                    if (!is_numeric($st)) {
+                        throw new Exception("Status(es) inválido(s)");
+                    }
+                }
+            }
+        }
+        // pega oportunidades via ORM
+        $opportunities = [];
+        if (isset($opportunityIDs)) {
+            $opportunities = $app->repo("Opportunity")->findBy(["id" => $opportunityIDs]);
+        } else {
+            $opportunities = $app->repo("Opportunity")->findAll();
+        }
+        $statusList = isset($statuses) ? $statuses : [
+            Registration::STATUS_APPROVED,
+            Registration::STATUS_SENT,
+        ];
+        // $reportOut = "";
+        $report["recoveredOperation"] = [];
+        $report["noValidationRules"] = [];
+        $report["missingBasicData"] = [];
+        $report["invalid"] = [];
+        $report["valid"] = [];
+        $banklessPayment = 0;
+        $banksMissingRules = [];
+        $missingBanks = [];
+        $totalRecords = 0;
+        set_time_limit(0);
+        //header("Content-type: text/utf-8");
+        header("Content-type: application/json");
+        flush();
+        foreach ($opportunities as $opportunity) {
+            // pega inscrições via DQL seguindo recomendações do Doctrine para grandes volumes
+            $dql = "SELECT e FROM MapasCulturais\Entities\Registration e
+                             WHERE e.status IN (:statusList) AND
+                                   e.opportunity=:oppId";
+            $query = $app->em->createQuery($dql);
+            $registrations = $query->iterate(["oppId" => $opportunity->id,
+                                              "statusList" => $statusList]);
+            /**
+             * Mapeamento de fielsds_id pelo label do campo
+             */
+            $this->registerRegistrationMetadata($opportunity);
+            $interestFields = $this->findFields([
+                //["target" => "type", "matching" => ["TIPO DE CONTA BANCÁRIA:", "TIPO DE CONTA BANCÁRIA"]],
+                ["target" => "bank", "matching" => ["BANCO:"]],
+                ["target" => "branch", "matching" => ["AGÊNCIA", "Número de agência:"]],
+                ["target" => "account", "matching" => ["NÚMERO DA CONTA:", "Número de conta:"]],
+                ["target" => "operation", "matching" => ["NÚMERO DA OPERAÇÃO SE HOUVER", "Número de operação (se houver):"]],
+                ["target" => "payment", "matching" => ["FORMA PARA RECEBIMENTO DO BENEFÍCIO:"]],
+            ], $opportunity->registrationFieldConfigurations);
+            $regsOpp[$opportunity->id] = 0;
+            // processa inscrições
+            while ($registration = $registrations->next()[0]) {
+                ++$totalRecords;
+                // contabiliza e pula ordem de pagamento
+                if (isset($interestFields["payment"])) {
+                    $payment = $interestFields["payment"];
+                    $payment = $registration->$payment;
+                    if (strstr(strtolower($payment), "ordem de pagamento")) {
+                        ++$banklessPayment;
+                        continue;
+                    }
+                }
+                // pega dados dos campos de interesse
+                $bank = $interestFields["bank"];
+                $bank = $registration->$bank;
+                $bankNumber = $this->numberBank($bank);
+                $branch = $interestFields["branch"];
+                $branch = $registration->$branch;
+                $account = $interestFields["account"];
+                $account = $registration->$account;
+                $operation = $interestFields["operation"];
+                $operation = $registration->$operation;
+                // registra bancos sem código no config-bankdata.php
+                if ((strlen($bank) != 0) && (strlen($bankNumber) == 0)) {
+                    $missingBanks[$bank] = true;
+                }
+                // inclui no relatório qualquer inscrição que informe pelo menos um dos campos
+                if ($bank || $branch || $account || $operation) {
+                    $reportLine = "banco[$bankNumber] agência[$branch] " .
+                                  "conta[$account] operação[$operation]";
+                    $valid = $this->verifyBankingInfo($bankNumber, $branch,
+                                                      $account, $operation);
+                    // inscrições com dados faltando
+                    if ($valid == Remessas::VALIDATION_MISSING_DATA) {
+                        $report["missingBasicData"][] = [
+                            "id" => $registration->id,
+                            "opportunity" => $opportunity->id,
+                            "report" => $reportLine
+                        ];
+                    // inscrições que faltam regras de validação no config-bankdata.php
+                    } else if ($valid == Remessas::VALIDATION_NORULE) {
+                        $report["noValidationRules"][] = [
+                            "id" => $registration->id,
+                            "opportunity" => $opportunity->id,
+                            "report" => $reportLine
+                        ];
+                        $banksMissingRules["$bankNumber"] = true;
+                    // inscrições que não passaram na validação
+                    } else if ($valid != Remessas::VALIDATION_PASSED) {
+                        $report["invalid"][] = [
+                            "id" => $registration->id,
+                            "opportunity" => $opportunity->id,
+                            "flags" => $valid,
+                            "report" => $reportLine
+                        ];
+                    // inscrições válidas formatadas
+                    } else {
+                        $formatted = $this->formattedBankingInfo($bankNumber, $branch,
+                                                                 $account, $operation);
+                        $branch = $formatted["branch"]["formatted"];
+                        $fAccount = $formatted["account"]["formatted"];
+                        $operation = isset($formatted["operation"]) ? $formatted["operation"] : "";
+                        $report["valid"][] = "banco[$bankNumber] agência[$branch] " .
+                                             "conta[$fAccount|$account] operação[$operation]";
+                    }
+                }
+                $app->em->clear();
+            }
+        }
+        // finaliza a preparação do JSON
+        if (!empty($missingBanks)) {
+            $report["missingBanks"] = array_keys($missingBanks);
+        }
+        if (!empty($banksMissingRules)) {
+            $report["banksMissingRules"] = array_keys($banksMissingRules);
+        }
+        $report["counts"] = [
+            "processed" => $totalRecords,
+            "noValidationRules" => sizeof($report["noValidationRules"]),
+            "missingBasicData" => sizeof($report["missingBasicData"]),
+            "invalid" => sizeof($report["invalid"]),
+            "valid" => sizeof($report["valid"]),
+            "bankless" => $banklessPayment
+        ];
+        echo(json_encode($report));
+        return;
     }
 
     //###################################################################################################################################
@@ -1116,6 +1292,113 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         return substr($data, 0, $length);
     }
 
+    /**
+     * Encontra os campos especificados pelos parâmetros. Exemplo:
+     * $this->findFields([
+     *      [
+     *          "target" => "type",
+     *          "matching" => [
+     *              "TIPO DE CONTA BANCÁRIA:",
+     *              "TIPO DE CONTA BANCÁRIA"
+     *          ]
+     *      ]
+     * ], $opportunity->registrationFieldConfigurations);
+     * Retornará um dicionário ["type" => "<field_id>"] para o primeiro campo de
+     * $opportunity->registrationFieldConfigurations cujo nome for algum dos
+     * nomes passados em "matching".
+     */
+    private function findFields($fieldSpecs, $fieldConfigs)
+    {
+        $fields = [];
+        foreach ($fieldConfigs as $field) {
+            $title = trim($field->title);
+            foreach ($fieldSpecs as $spec) {
+                if (in_array($title, $spec["matching"])) {
+                    $fields[$spec["target"]] = "field_" . $field->id;
+                    break;
+                }
+            }
+            if (sizeof($fields) > sizeof($fieldSpecs)) {
+                break;
+            }
+        }
+        return $fields;
+    }
+
+    /**
+     * Retorna as informações bancárias formatadas de acordo com o arquivo de
+     * configuração config-bankdata.php, ou null se ocorrer um erro.
+     */
+    private function formattedBankingInfo($bank, $branch, $account, $operation)
+    {
+        $out = [];
+        if (!$bank || !$branch || !$account) {
+            return null;
+        }
+        $rules = $this->config["config-bankdata"]["byNumber"];
+        if (!isset($rules[$bank])) {
+            return null;
+        }
+        $out["bank"] = $bank;
+        $rules = $rules[$bank];
+        if (!$this->verifyField($rules["branch"], $branch)) {
+            return null;
+        }
+        $out["branch"] = $this->formattedField($rules["branch"], $branch);
+        if (!$this->verifyField($rules["account"], $account)) {
+            return null;
+        }
+        $out["account"] = $this->formattedField($rules["account"], $account);
+        if (isset($rules["operation"])) {
+            if (!$operation) {
+                return null;
+            }
+            if (!$this->verifyCannedField($rules["operation"], $operation)) {
+                return null;
+            }
+            $out["operation"] = str_pad($operation,
+                                        $rules["operation"]["length"], "0",
+                                        STR_PAD_LEFT);;
+        }
+        return $out;
+    }
+
+    /**
+     * Formata um campo de informações bancárias separando valor e dígito, e
+     * aplicando transformações ao dígito se especificado na regra.
+     */
+    private function formattedField($rules, $value)
+    {
+        $out = ["formatted" => ""];
+        $value = preg_replace("/[\.\_\:\s\-]/", "", trim($value));
+        if (isset($rules["digit"])) {
+            $digit = substr($value, -1);
+            if (is_array($rules["digit"]) && isset($rules["digit"]["map"])) {
+                if (isset($rules["digit"]["map"][$digit])) {
+                    $digit = $rules["digit"]["map"][$digit];
+                }
+            }
+            $out["digit"] = $digit;
+            $value = substr($value, 0, -1);
+            $out["formatted"] = "-" . $digit;
+        }
+        if (isset($rules["prefix"]) &&
+            (strlen($value) == $rules["prefix"]["totalLength"])) {
+            $value = substr($value, ($rules["prefix"]["totalLength"] - $rules["length"]));
+        }
+        if (strlen($value) > $rules["length"]) {
+            $value = substr($value, -$rules["length"]);
+        } else {
+            $value = str_pad($value, $rules["length"], "0", STR_PAD_LEFT);
+        }
+        $out["value"] = $value;
+        $out["formatted"] = $value . $out["formatted"];
+        return $out;
+    }
+
+    /**
+     * Local unificado para os mapas de campos dos exportadores CNAB240.
+     */
     private function getMappings($detail1, $detail2, $default)
     {
         return [
@@ -1140,11 +1423,11 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'USO_BANCO_23' => '',
                 'CODIGO_REMESSA' => '',
                 'DATA_GER_ARQUIVO' => function($registration) use ($detail1) {
-                    $date = new DateTime();                
+                    $date = new DateTime();
                     return $date->format('d/m/Y');
                 },
                 'HORA_GER_ARQUIVO' => function($registration) use ($detail1) {
-                    $date = new DateTime();                
+                    $date = new DateTime();
                     return $date->format('H:i:s');
                 },
                 'NUM_SERQUNCIAL_ARQUIVO' => '',
@@ -1358,7 +1641,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             ]
         ];
     }
-    
+
     /*
      * Função para retornar o número do banco, levando como base de pesquisa o nome do banco
      * Todos os textos que entram pelo parâmetro $bankName, são primeiro colocados em lowercase em seguida a primeira letra
@@ -1424,4 +1707,176 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         return $txt_data;
     }
 
+    /**
+     * Obtém o valor de um campo para o qual estejam configuradas fontes
+     * alternativas no config-bankdata.php. Atualmente suporta apenas máscaras
+     * de tamanho fixo onde uma seqüência contígua de caracteres "o" marca a
+     * localização da informação.
+     *
+     * O parâmetro sources deve usar as chaves usadas na configuração.
+     *
+     * Retorna null se não for possível encontrar um valor.
+     *
+     * Exemplo de configuração no parâmetro rules:
+     * [
+     *     "alternateSources" => ["account" => "oooxxxxxxxxx"],
+     *     "length" => 3
+     * ]
+     * Neste caso, o parâmetro $sources deve conter a chave "account" associada
+     * a uma string que filtrada tenha 12 caracteres para que o valor seja
+     * encontrado.
+     */
+    private function obtainField($rules, $sources)
+    {
+        if (!isset($rules["alternateSources"])) {
+            return null;
+        }
+        foreach ($rules["alternateSources"] as $source => $mask) {
+            if (!isset($sources[$source])) {
+                continue;
+            }
+            $candidateSource = preg_replace("/[\.\_\:\s\-]/", "",
+                                            trim($sources[$source]));
+            if ((strlen($candidateSource) == strlen($mask))) {
+                $start = strcspn($mask, "o");
+                $end = strspn($mask, "o", $start);
+                if ($end == $rules["length"]) {
+                    $value = substr($candidateSource, $start, $end);
+                    if (isset($rules["values"]) &&
+                        !in_array($value, $rules["values"])) {
+                        return null;
+                    }
+                    return $value;
+                }
+            }
+        }
+        return null;
+    }
+
+	/**
+     * Executa as validações de informações bancárias com base no arquivo de
+     * configuração config-bankdata.php.
+     * Os códigos VALIDATION_FAILED_* podem voltar combinados em um bitmap.
+     */
+    private function verifyBankingInfo($bank, $branch, $account, &$operation)
+    {
+        if (!$bank || !$branch || !$account) {
+            return Remessas::VALIDATION_MISSING_DATA;
+        }
+        $rules = $this->config["config-bankdata"]["byNumber"];
+        if (!isset($rules[$bank])) {
+            return Remessas::VALIDATION_NORULE;
+        }
+        $rules = $rules[$bank];
+        $result = Remessas::VALIDATION_PASSED;
+        if (!$this->verifyField($rules["branch"], $branch)) {
+            $result |= Remessas::VALIDATION_FAILED_BRANCH;
+        }
+        if (!$this->verifyField($rules["account"], $account)) {
+            $result |= Remessas::VALIDATION_FAILED_ACCOUNT;
+        }
+        if (isset($rules["operation"])) {
+            if (!$operation && !isset($this->data["strict"])) {
+                $operation = $this->obtainField($rules["operation"], [
+                    "account" => $account,
+                    "branch" => $branch
+                ]);
+                if (!$operation) {
+                    return Remessas::VALIDATION_MISSING_DATA;
+                }
+            }
+            if (!$this->verifyCannedField($rules["operation"], $operation,
+                                          ["account" => $account])) {
+                $result |= Remessas::VALIDATION_FAILED_OPERATION;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Valida um campo de informações bancárias que só aceita uma lista de
+     * valores predefinidos (atualmente só a operação da CEF).
+    */
+    private function verifyCannedField($rules, $value)
+    {
+        $strict = isset($this->data["strict"]);
+        $value = trim($value);
+        if (!$strict) {
+            $value = str_pad($value, $rules["length"], "0", STR_PAD_LEFT);
+        }
+        if (!in_array($value, $rules["values"])) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Valida um campo de informações bancárias (agência ou conta).
+     */
+    private function verifyField($rules, $value)
+    {
+        $strict = isset($this->data["strict"]);
+        // corta todos os supérfluos
+        $value = preg_replace("/[\.\_\:\s\-]/", "", trim($value));
+        // verifica regra detalhada
+        if (is_array($rules)) {
+            $len = $rules["length"];
+            $maxLen = $len;
+            // aplica regra de dígito se existir
+            if (isset($rules["digit"])) {
+                ++$maxLen;
+            }
+            // aplica regra de prefixo se existir e tamanho sugerir prefixo
+            if (isset($rules["prefix"]) &&
+                !$this->verifyFieldSize($value, $maxLen, $strict)) {
+                $prefix = $rules["prefix"];
+                $lenValue = strlen($value);
+                if ($lenValue != ($prefix["totalLength"] + ($maxLen - $len))) {
+                    $extra = substr($value, 0, ($lenValue - $maxLen));
+                    return (strspn($extra, "0") == ($lenValue - $maxLen));
+                }
+                $found = false;
+                foreach ($prefix["values"] as $p) {
+                    if (str_starts_with($value, $p)) {
+                        $found = true;
+                        $maxLen += strlen($p);
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $extra = substr($value, 0, ($lenValue - $maxLen));
+                    return (strspn($extra, "0") == ($lenValue - $maxLen));
+                }
+            }
+            if (!$this->verifyFieldSize($value, $maxLen, $strict)) {
+                return false;
+            }
+            // aplica regra regex se existir
+            if (isset($rules["regex"])) {
+                // aqui já passou pelo verifyFieldSize então pode truncar
+                return preg_match($rules["regex"], substr($value, -$maxLen));
+            }
+            return true;
+        }
+        // trata regra como regex
+        return preg_match($rules, $value);
+	}
+
+    /**
+     * Valida o tamanho de um campo. Se strict for verdadeiro, aceita apenas o
+     * próprio tamanho passado. Caso contrário aceita tamanhos menores e maiores
+     * desde que os caracteres sobrando à esquerda sejam todos zero.
+     */
+    private function verifyFieldSize($value, $size, $strict)
+    {
+        $len = strlen($value);
+        if ($strict) {
+            return ($len == $size);
+        }
+        if ($len <= $size) {
+            return true;
+        }
+        $extra = substr($value, 0, ($len - $size));
+        return (strspn($extra, "0") == ($len - $size));
+    }
 }

@@ -110,19 +110,40 @@ return [
 		],
 		"041" => [
 			"name" => "Banco do Estado do Rio Grande do Sul S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,9}\s*-?\s*[0-9]$/", //"999999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,9}\s*-?\s*[0-9]$/",
+				"length" => 9,
+				"digit" => true
+			], //"999999999-D"
 		],
 		//"047" => ["name" => "Banco do Estado de Sergipe S.A."],
 		"070" => [
 			"name" => "BRB - Banco de Brasília S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,9}\s*-?\s*[0-9]$/", //"999999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,9}\s*-?\s*[0-9]$/",
+				"length" => 9,
+				"digit" => true
+			], //"999999999-D"
 		],
 		"077" => [
 			"name" => "Banco Inter",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,9}\s*-?\s*[0-9]$/", //"999999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,9}\s*-?\s*[0-9]$/",
+				"length" => 9,
+				"digit" => true
+			], //"999999999-D"
 		],
 		//"083" => ["name" => "bco da china brasil sa"],
 		"104" => [
@@ -140,18 +161,39 @@ return [
 					"values" => ["001", "002", "003", "013", "022", "023"]
 				]
 			], //"XXX99999999-D", // XXX is operation
-			"operation" => ["001", "002", "003", "013", "022", "023"]
+			"operation" => [
+				"alternateSources" => [
+					"account" => "oooxxxxxxxxx"
+				],
+				"length" => 3,
+				"values" => ["001", "002", "003", "013", "022", "023"]
+				]
 		],
 		//"208" => ["name" => "banco btg pactual sa"],
 		"212" => [
 			"name" => "Banco Original",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,7}\s*-?\s*[0-9]$/", //"9999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,7}\s*-?\s*[0-9]$/",
+				"length" => 7,
+				"digit" => true
+			], //"9999999-D"
 		],
 		"237" => [
 			"name" => "Banco Bradesco S.A.",
-			"branch" => "/^\d{1,4}\s*-?\s*[0-9]$/", //"9999-D",
-			"account" => "/^\d{1,7}\s*-?\s*[0-9]$/", //"9999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}\s*-?\s*[0-9]$/",
+				"length" => 4,
+				"digit" => true
+			], //"9999-D",
+			"account" => [
+				"regex" => "/^\d{1,7}\s*-?\s*[0-9]$/",
+				"length" => 7,
+				"digit" => true
+			], //"9999999-D"
 		],
 		"318" => [ // from phone support
 			"name" => "Banco Bmg S.A.",
@@ -165,25 +207,53 @@ return [
 		],
 		"341" => [
 			"name" => "Itaú Unibanco S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,5}\s*-?\s*[0-9]$/", //"99999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,5}\s*-?\s*[0-9]$/",
+				"length" => 5,
+				"digit" => true
+			], //"99999-D"
 		],
 		"422" => [
 			"name" => "Banco Safra S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,8}\s*-?\s*[0-9]$/", //"99999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,8}\s*-?\s*[0-9]$/",
+				"length" => 8,
+				"digit" => true
+			], //"99999999-D"
 		],
 		//"623" => [ /* NEED THIS RULE */ "name" => "Banco PAN S.A."],
 		//"666" => ["name" => "BR Partners BI"],
 		"260" => [
 			"name" => "Nu Pagamentos S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,10}\s*-?\s*[0-9]$/", //"9999999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,10}\s*-?\s*[0-9]$/",
+				"length" => 10,
+				"digit" => true
+			], //"9999999999-D"
 		],
 		"655" => [
 			"name" => "Banco Votorantim S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,7}\s*-?\s*[0-9]$/", //"9999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,7}\s*-?\s*[0-9]$/",
+				"length" => 7,
+				"digit" => true
+			], //"9999999-D"
 		],
 		//"323" => [ /* NEED THIS RULE */ "name" => "mercado pago"],
 		"097" => [ // from netbanking
@@ -199,20 +269,41 @@ return [
 		//"394" => [ /* NEED THIS RULE */ "name" => "Banco Bradesco Financiamentos S.A."],
 		"290" => [
 			"name" => "PagSeguro",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,8}\s*-?\s*[0-9]$/", //"99999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,8}\s*-?\s*[0-9]$/",
+				"length" => 8,
+				"digit" => true
+			], //"99999999-D"
 		],
 		"292" => [
 			"name" => "BS2 DTVM S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,6}\s*-?\s*[0-9]$/", //"999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,6}\s*-?\s*[0-9]$/",
+				"length" => 6,
+				"digit" => true
+			], //"999999-D"
 		],
 		//"122" => [ /* NEED THIS RULE */ "name" => "Banco Bradesco BERJ S.A."],
 		//"313" => ["name" => "amazonia cc ltda"],
 		"336" => [
 			"name" => "Banco C6 S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,7}\s*-?\s*[0-9]$/", //"9999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,7}\s*-?\s*[0-9]$/",
+				"length" => 7,
+				"digit" => true
+			], //"9999999-D"
 		],
 		"184" => [ //from netbanking
 			"name" => "Banco Itaú BBA S.A.",
@@ -229,26 +320,53 @@ return [
 		//"331" => ["name" => "fram capital dtvm sa"],
 		"746" => [
 			"name" => "Banco Modal S.A.",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,9}\s*-?\s*[0-9]$/", //"999999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,9}\s*-?\s*[0-9]$/",
+				"length" => 9,
+				"digit" => true
+			], //"999999999-D"
 		],
 		"748" => [
 			"name" => "bco cooperativo sicredi sa",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,6}[0-9]$/", //"999999D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,6}[0-9]$/",
+				"length" => 6,
+				"digit" => true
+			], //"999999D"
 		],
 		//"283" => ["name" => "rb capital investimentos dtvm ltda"],
 		"756" => [
 			"name" => "bancoob",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,9}\s*-?\s*[0-9]$/", //"999999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,9}\s*-?\s*[0-9]$/",
+				"length" => 9,
+				"digit" => true
+			], //"999999999-D"
 		],
 		"335" => [ // from website
 			"name" => "digio",
-			"branch" => "/^\d{1,4}$/", //"9999",
-			"account" => "/^\d{1,7}\s*-?\s*[0-9]$/", //"9999999-D"
+			"branch" => [
+				"regex" => "/^\d{1,4}$/",
+				"length" => 4
+			], //"9999",
+			"account" => [
+				"regex" => "/^\d{1,7}\s*-?\s*[0-9]$/",
+				"length" => 7,
+				"digit" => true
+			], //"9999999-D"
 		],
 		//"652" => [ /* NEED THIS RULE */ */ "name" => "Itaú Unibanco Holding S.A."],
 	]
 ];
-?>
