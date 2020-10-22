@@ -102,7 +102,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
         $query = $app->em->createQuery($dql);
         $query->setParameters([
-            'opportunity_Id' => $opportunity_id,
+            'opportunity_id' => $opportunity_id,
             'status' => $status,
         ]);
 
