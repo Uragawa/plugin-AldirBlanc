@@ -394,7 +394,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         /**
          * Busca as inscrições com status 10 (Selecionada)
          */
-         if ($getData) {
+        if ($getData) {
             $dql = "SELECT e FROM MapasCulturais\Entities\Registration e
             WHERE e.status = :status AND
             e.opportunity = :opportunity_Id AND
@@ -431,6 +431,430 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             die();
         }
 
+        $mappedHeader1 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'USO_BANCO_12' => '',
+            'INSCRICAO_TIPO' => '',
+            'CPF_CNPJ_FONTE_PAG' => '',
+            'CONVENIO_BB1' => '',
+            'CONVENIO_BB2' => '',
+            'CONVENIO_BB3' => '',
+            'CONVENIO_BB4' => '',
+            'AGENCIA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 4);
+
+            },
+            'AGENCIA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'CONTA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 12);
+                exit();
+
+            },
+            'CONTA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'USO_BANCO_20' => '',
+            'NOME_EMPRESA' => '',
+            'NOME_BANCO' => '',
+            'USO_BANCO_23' => '',
+            'CODIGO_REMESSA' => '',
+            'DATA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
+                $date = new DateTime();
+                return $date->format('dmY');
+            },
+            'HORA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
+                $date = new DateTime();
+                return $date->format('His');
+            },
+            'NUM_SERQUNCIAL_ARQUIVO' => '',
+            'LAYOUT_ARQUIVO' => '',
+            'DENCIDADE_GER_ARQUIVO' => '',
+            'USO_BANCO_30' => '',
+            'USO_BANCO_31' => '',
+        ];
+
+        $mappedHeader2 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'OPERACAO' => '',
+            'SERVICO' => '',
+            'FORMA_LANCAMENTO' => '',
+            'LAYOUT_LOTE' => '',
+            'USO_BANCO_43' => '',
+            'INSCRICAO_TIPO' => '',
+            'INSCRICAO_NUMERO' => '',
+            'CONVENIO_BB1' => '',
+            'CONVENIO_BB2' => '',
+            'CONVENIO_BB3' => '',
+            'CONVENIO_BB4' => '',
+            'AGENCIA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 4);
+
+            },
+            'AGENCIA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'CONTA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 12);
+                exit();
+
+            },
+            'CONTA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'USO_BANCO_51' => '',
+            'NOME_EMPRESA' => '',
+            'USO_BANCO_40' => '',
+            'LOGRADOURO' => '',
+            'NUMERO' => '',
+            'COMPLEMENTO' => '',
+            'CIDADE' => '',
+            'CEP' => '',
+            'ESTADO' => '',
+            'USO_BANCO_60' => '',
+            'USO_BANCO_61' => '',
+        ];
+
+        $mappedDeletalhe1 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'NUMERO_REGISTRO' => '',
+            'SEGMENTO' => '',
+            'TIPO_MOVIMENTO' => '',
+            'CODIGO_MOVIMENTO' => '',
+            'CAMARA_CENTRALIZADORA' => '',
+            'BEN_CODIGO_BANCO' => function ($registrations) use ($detahe1) {
+                $field_id = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                return $this->numberBank($registrations->$field_id);
+            },
+            'BEN_AGENCIA' => function ($registrations) use ($detahe1) {
+                $field_id = $detahe1['BEN_AGENCIA']['field_id'];
+                $age = $registrations->$field_id;
+
+                if (strlen($age) > 4) {
+                    $result = substr($age, 0, 4);
+                } else {
+                    $result = $age;
+                }
+                return $result;
+            },
+            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1) {
+                $result = "";
+                $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
+                $dig = $registrations->$field_id;
+                if (strlen($dig) > 4) {
+                    $result = substr($dig, -1);
+                } else {
+                    $result = "";
+                }
+
+                return is_string($result) ? strtoupper($result) : $result;
+            },
+            'BEN_CONTA' => function ($registrations) use ($detahe1, $default) {
+                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                $numberBank = $this->numberBank($registrations->$temp);
+                $temp = $detahe1['TIPO_CONTA']['field_id'];
+                $typeAccount = $registrations->$temp;
+
+                $field_id = $detahe1['BEN_CONTA']['field_id'];
+                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+
+                $account = $registrations->$field_id;
+
+                $result = "";
+                if ($numberBank == '001' && $typeAccount == $default['typesAccount']['poupanca']) {
+
+                    if (substr($account, 0, 3) != "510") {
+                        $result = "510" . $account;
+                    } else {
+
+                        $result = $account;
+
+                    }
+                } else {
+
+                    $result = $registrations->$field_id;
+                }
+
+                if($temp === $field_id){
+                    return substr($result, 0, -1); // Remove o ultimo caracter. Intende -se que o ultimo caracter é o DV da conta
+
+                }else{
+                    return $result;
+
+                }
+
+            },
+            'BEN_CONTA_DIGITO' => function ($registrations) use ($detahe1, $default) {
+                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                $field_id = $detahe1['BEN_CONTA']['field_id'];
+
+                $numberBank = $this->numberBank($registrations->$temp);
+
+                $temp = $detahe1['TIPO_CONTA']['field_id'];
+                $typeAccount = $registrations->$temp;
+
+                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+                $account = preg_replace('/[^0-9]/i', '', $registrations->$temp);
+
+                $dig = substr($account, -1);
+
+                $result = "";
+
+                if ($numberBank == '001' && $typeAccount == $default['typesAccount']['poupanca']) {
+
+                    if (substr($account, 0, 3) == "510") {
+                        $result = $dig;
+                    } else {
+
+                        $result = $default['savingsDigit'][$dig];
+
+                    }
+                } else {
+
+                    $result = $dig;
+                }
+
+                return is_string($result) ? strtoupper($result) : $result;
+
+            },
+            'BEN_DIGITO_CONTA_AGENCIA_80' => '',
+            'BEN_NOME' => function ($registrations) use ($detahe1) {
+                $field_id = $detahe1['BEN_NOME']['field_id'];
+                $result = substr($registrations->$field_id, 0, $detahe1['BEN_NOME']['length']);
+                return $result;
+            },
+            'BEN_DOC_ATRIB_EMPRESA_82' => '',
+            'DATA_PAGAMENTO' => function ($registrations) use ($detahe1) {
+                $date = new DateTime();
+                $date->add(new DateInterval('P1D'));
+                $weekday = $date->format('D');
+
+                $weekdayList = [
+                    'Mon' => true,
+                    'Tue' => true,
+                    'Wed' => true,
+                    'Thu' => true,
+                    'Fri' => true,
+                    'Sat' => false,
+                    'Sun' => false,
+                ];
+
+                while (!$weekdayList[$weekday]) {
+                    $date->add(new DateInterval('P1D'));
+                    $weekday = $date->format('D');
+                }
+
+                return $date->format('dmY');
+            },
+            'TIPO_MOEDA' => '',
+            'USO_BANCO_85' => '',
+            'VALOR_INTEIRO' => function ($registrations) use ($detahe1) {
+                $valor = '100,98';
+                $valor = preg_replace('/[^0-9]/i', '', $valor);
+
+                return $valor;
+            },
+            'USO_BANCO_88' => '',
+            'USO_BANCO_89' => '',
+            'USO_BANCO_90' => '',
+            'CODIGO_FINALIDADE_TED' => function ($registrations) use ($detahe1) {
+                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                $numberBank = $this->numberBank($registrations->$temp);
+                if ($numberBank != "001") {
+                    return '10';
+                } else {
+                    return "";
+                }
+            },
+            'USO_BANCO_92' => '',
+            'USO_BANCO_93' => '',
+            'TIPO_CONTA' => '',
+        ];
+
+        $mappedDeletalhe2 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'NUMERO_REGISTRO' => '',
+            'SEGMENTO' => '',
+            'USO_BANCO_104' => '',
+            'BEN_TIPO_DOC' => '',
+            'BEN_CPF' => function ($registrations) use ($detahe2) {
+                $field_id = $detahe2['BEN_CPF']['field_id'];
+                $data = $registrations->$field_id;
+                if (strlen($this->normalizeString($data)) != 11) {
+                    $_SESSION['problems'][$registrations->number] = "CPF Inválido";
+                }
+                return $data;
+            },
+            'BEN_ENDERECO_LOGRADOURO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_LOGRADOURO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_LOGRADOURO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Nome_Logradouro'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_LOGRADOURO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+
+            },
+            'BEN_ENDERECO_NUMERO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_NUMERO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_NUMERO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Num'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_NUMERO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_COMPLEMENTO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_COMPLEMENTO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_COMPLEMENTO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Complemento'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_COMPLEMENTO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_BAIRRO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_BAIRRO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_BAIRRO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Bairro'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_BAIRRO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_CIDADE' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_CIDADE']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_CIDADE']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Municipio'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_CIDADE Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_CEP' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_CEP']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_CEP']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_CEP'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_CEP Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_ESTADO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_ESTADO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_CIDADE']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Estado'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_ESTADO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'USO_BANCO_114' => '',
+            'USO_BANCO_115' => '',
+            'USO_BANCO_116' => '',
+            'USO_BANCO_117' => '',
+        ];
+
+        $mappedTrailer1 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'USO_BANCO_126' => '',
+            'QUANTIDADE_REGISTROS_127' => '',
+            'VALOR_TOTAL_DOC_INTEIRO' => '',
+            'VALOR_TOTAL_DOC_DECIMAL' => '',
+            'USO_BANCO_130' => '',
+            'USO_BANCO_131' => '',
+            'USO_BANCO_132' => '',
+        ];
+
+        $mappedTrailer2 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'USO_BANCO_141' => '',
+            'QUANTIDADE_LOTES-ARQUIVO' => '',
+            'QUANTIDADE_REGISTROS_ARQUIVOS' => '',
+            'USO_BANCO_144' => '',
+            'USO_BANCO_145' => '',
+        ];
+
         /**
          * Separa os registros em 3 categorias
          * $recordsBBPoupanca =  Contas polpança BB
@@ -443,6 +867,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $field_conta = $default['field_conta'];
         $field_banco = $default['field_banco'];
         foreach ($registrations as $value) {
+
             if ($this->numberBank($value->$field_banco) == "001") {
 
                 if ($value->$field_conta == "Conta corrente") {
@@ -461,13 +886,6 @@ class Remessas extends \MapasCulturais\Controllers\Registration
          * faz a pesquisa atravez do array mapped. Caso contrario busca o valor default da configuração
          *
          */
-        $mappings = $this->getMappings($detahe1, $detahe2, $default);
-        $mappedHeader1 = $mappings["headerFile"];
-        $mappedHeader2 = $mappings["headerBatch"];
-        $mappedDeletalhe1 = $mappings["detailA"];
-        $mappedDeletalhe2 = $mappings["detailB"];
-        $mappedTrailer1 = $mappings["trailerBatch"];
-        $mappedTrailer2 = $mappings["trailerFile"];
 
         $newline = "\r\n";
 
@@ -477,7 +895,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $totalRegistros = 0;
 
         $complement = [];
-        $txt_data = $this->mountTxt($header1, $mappedHeader1, $txt_data, null, null);
+        $txt_data = $this->mountTxt($header1, $mappedHeader1, $txt_data, null, null, $app);
         $totalRegistros += 1;
 
         $txt_data .= $newline;
@@ -495,7 +913,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
 
-            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
 
             $lotBBCorrente += 1;
@@ -503,17 +921,20 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $_SESSION['valor'] = 0;
 
             $totaLotes++;
+            $numSeqRegistro = 0;
 
             //Detalhes 1 e 2
 
             foreach ($recordsBBCorrente as $key_records => $records) {
+                $numSeqRegistro++;
                 $complement = [
                     'LOTE' => $numLote,
+                    'NUMERO_REGISTRO' => $numSeqRegistro,
                 ];
-                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
-                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
                 $lotBBCorrente += 2;
@@ -530,7 +951,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
             ];
 
-            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
             $totalRegistros += $lotBBCorrente;
         }
@@ -544,10 +965,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $complement = [];
             $numLote++;
             $complement = [
-                'FORMA_LANCAMENTO' => 5,
+                'FORMA_LANCAMENTO' => 05,
                 'LOTE' => $numLote,
             ];
-            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
 
             $lotBBPoupanca += 1;
@@ -555,18 +976,21 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $_SESSION['valor'] = 0;
 
             $totaLotes++;
+            $numSeqRegistro = 0;
 
             //Detalhes 1 e 2
 
             foreach ($recordsBBPoupanca as $key_records => $records) {
+                $numSeqRegistro++;
                 $complement = [
                     'LOTE' => $numLote,
+                    'NUMERO_REGISTRO' => $numSeqRegistro,
                 ];
 
-                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
-                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
                 $lotBBPoupanca += 2;
@@ -583,7 +1007,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
 
-            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
 
             $totalRegistros += $lotBBPoupanca;
@@ -602,7 +1026,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
 
-            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement, $app);
 
             $txt_data .= "\r\n";
 
@@ -611,18 +1035,21 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $_SESSION['valor'] = 0;
 
             $totaLotes++;
+            $numSeqRegistro = 0;
 
             //Detalhes 1 e 2
 
             foreach ($recordsOthers as $key_records => $records) {
+                $numSeqRegistro++;
                 $complement = [
                     'LOTE' => $numLote,
+                    'NUMERO_REGISTRO' => $numSeqRegistro,
                 ];
-                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement, $app);
 
                 $txt_data .= $newline;
 
-                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
                 $lotOthers += 2;
 
@@ -637,7 +1064,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'VALOR_TOTAL_DOC_INTEIRO' => $valor,
                 'LOTE' => $numLote,
             ];
-            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
             $totalRegistros += $lotOthers;
         }
@@ -649,7 +1076,15 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'QUANTIDADE_REGISTROS_ARQUIVOS' => $totalRegistros,
         ];
 
-        $txt_data = $this->mountTxt($trailer2, $mappedTrailer2, $txt_data, null, $complement);
+        $txt_data = $this->mountTxt($trailer2, $mappedTrailer2, $txt_data, null, $complement, $app);
+
+        if (isset($_SESSION['problems'])) {
+            foreach ($_SESSION['problems'] as $key => $value) {
+                echo "<p>Problemas na inscrição " . $key . " => " . $value . " </p>";
+            }
+            unset($_SESSION['problems']);
+            //die();
+        }
 
         // header('Content-type: text/utf-8');
         // echo $txt_data;
@@ -742,14 +1177,13 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $opportunity = $app->repo('Opportunity')->find($opportunity_id);
         $this->registerRegistrationMetadata($opportunity);
 
-         /**
+        /**
          * Mapeamento de fielsds_id pelo label do campo
          */
         foreach ($opportunity->registrationFieldConfigurations as $field) {
             $field_labelMap["field_" . $field->id] = trim($field->title);
 
         }
-
 
         if (!$opportunity->canUser('@control')) {
             echo "Não autorizado";
@@ -769,48 +1203,47 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $trailer1 = $txt_config['TRAILER1'];
         $trailer2 = $txt_config['TRAILER2'];
 
-        foreach($header1 as $key_config => $value) {
-            if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
+        foreach ($header1 as $key_config => $value) {
+            if (is_string($value['field_id']) && strlen($value['field_id']) > 0 && $value['field_id'] != 'mapped') {
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
                 $header1[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($header2 as $key_config => $value) {
-            if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
+        foreach ($header2 as $key_config => $value) {
+            if (is_string($value['field_id']) && strlen($value['field_id']) > 0 && $value['field_id'] != 'mapped') {
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
                 $header2[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($detahe1 as $key_config => $value) {
-            if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
+        foreach ($detahe1 as $key_config => $value) {
+            if (is_string($value['field_id']) && strlen($value['field_id']) > 0 && $value['field_id'] != 'mapped') {
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
                 $detahe1[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($detahe2 as $key_config => $value) {
-            if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
+        foreach ($detahe2 as $key_config => $value) {
+            if (is_string($value['field_id']) && strlen($value['field_id']) > 0 && $value['field_id'] != 'mapped') {
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
                 $detahe2[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($trailer1 as $key_config => $value) {
-            if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
+        foreach ($trailer1 as $key_config => $value) {
+            if (is_string($value['field_id']) && strlen($value['field_id']) > 0 && $value['field_id'] != 'mapped') {
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
                 $trailer1[$key_config]['field_id'] = $field_id;
             }
         }
 
-        foreach($trailer2 as $key_config => $value) {
-            if(is_string($value['field_id']) && strlen($value['field_id'])>0 && $value['field_id'] != 'mapped'){
+        foreach ($trailer2 as $key_config => $value) {
+            if (is_string($value['field_id']) && strlen($value['field_id']) > 0 && $value['field_id'] != 'mapped') {
                 $field_id = array_search(trim($value['field_id']), $field_labelMap);
                 $trailer2[$key_config]['field_id'] = $field_id;
             }
         }
-
 
         /**
          * Busca as inscrições com status 10 (Selecionada)
@@ -852,13 +1285,465 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             die();
         }
 
-        $mappings = $this->getMappings($detahe1, $detahe2, $default);
-        $mappedHeader1 = $mappings["headerFile"];
-        $mappedHeader2 = $mappings["headerBatch"];
-        $mappedDeletalhe1 = $mappings["detailA"];
-        $mappedDeletalhe2 = $mappings["detailB"];
-        $mappedTrailer1 = $mappings["trailerBatch"];
-        $mappedTrailer2 = $mappings["trailerFile"];
+        $mappedHeader1 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'USO_BANCO_12' => '',
+            'INSCRICAO_TIPO' => '',
+            'CPF_CNPJ_FONTE_PAG' => '',
+            'CONVENIO_BB1' => '',
+            'CONVENIO_BB2' => '',
+            'CONVENIO_BB3' => '',
+            'CONVENIO_BB4' => '',
+            'AGENCIA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 4);
+
+            },
+            'AGENCIA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'CONTA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 12);
+                exit();
+
+            },
+            'CONTA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'USO_BANCO_20' => '',
+            'NOME_EMPRESA' => '',
+            'NOME_BANCO' => '',
+            'USO_BANCO_23' => '',
+            'CODIGO_REMESSA' => '',
+            'DATA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
+                $date = new DateTime();
+                return $date->format('dmY');
+            },
+            'HORA_GER_ARQUIVO' => function ($registrations) use ($detahe1) {
+                $date = new DateTime();
+                return $date->format('His');
+            },
+            'NUM_SERQUNCIAL_ARQUIVO' => '',
+            'LAYOUT_ARQUIVO' => '',
+            'DENCIDADE_GER_ARQUIVO' => '',
+            'USO_BANCO_30' => '',
+            'USO_BANCO_31' => '',
+        ];
+
+        $mappedHeader2 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'OPERACAO' => '',
+            'SERVICO' => '',
+            'FORMA_LANCAMENTO' => '',
+            'LAYOUT_LOTE' => '',
+            'USO_BANCO_43' => '',
+            'INSCRICAO_TIPO' => '',
+            'INSCRICAO_NUMERO' => '',
+            'CONVENIO_BB1' => '',
+            'CONVENIO_BB2' => '',
+            'CONVENIO_BB3' => '',
+            'CONVENIO_BB4' => '',
+            'AGENCIA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 4);
+
+            },
+            'AGENCIA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['AGENCIA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'CONTA' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA'];
+                $value = $this->normalizeString($field_id['default']);
+                return substr($value, 0, 12);
+
+
+            },
+            'CONTA_DIGITO' => function ($registrations) use ($header1) {
+                $result = "";
+                $field_id = $header1['CONTA_DIGITO'];
+                $value = $this->normalizeString($field_id['default']);
+                $result = is_string($value) ? strtoupper($value) : $value;
+                return $result;
+
+            },
+            'USO_BANCO_51' => '',
+            'NOME_EMPRESA' => '',
+            'USO_BANCO_40' => '',
+            'LOGRADOURO' => '',
+            'NUMERO' => '',
+            'COMPLEMENTO' => '',
+            'CIDADE' => '',
+            'CEP' => '',
+            'ESTADO' => '',
+            'USO_BANCO_60' => '',
+            'USO_BANCO_61' => '',
+        ];
+
+        $mappedDeletalhe1 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'NUMERO_REGISTRO' => '',
+            'SEGMENTO' => '',
+            'TIPO_MOVIMENTO' => '',
+            'CODIGO_MOVIMENTO' => '',
+            'CAMARA_CENTRALIZADORA' => '',
+            'BEN_CODIGO_BANCO' => function ($registrations) use ($detahe1) {
+                $field_id = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                return $this->numberBank($registrations->$field_id);
+            },
+            'BEN_AGENCIA' => function ($registrations) use ($detahe1) {
+                $field_id = $detahe1['BEN_AGENCIA']['field_id'];
+                $age = $registrations->$field_id;
+
+                if (strlen($age) > 4) {
+                    $result = substr($age, 0, 4);
+                } else {
+                    $result = $age;
+                }
+                return $result;
+            },
+            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1) {
+                $result = "";
+                $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
+                $dig = $registrations->$field_id;
+                if (strlen($dig) > 4) {
+                    $result = substr($dig, -1);
+                } else {
+                    $result = "";
+                }
+
+                return is_string($result) ? strtoupper($result) : $result;
+            },
+            'BEN_CONTA' => function ($registrations) use ($detahe1, $default) {
+                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                $numberBank = $this->numberBank($registrations->$temp);
+                $temp = $detahe1['TIPO_CONTA']['field_id'];
+                $typeAccount = $registrations->$temp;
+                $field_id = $detahe1['BEN_CONTA']['field_id'];
+                $account = $registrations->$field_id;
+
+                $result = "";
+                if ($numberBank == '001' && $typeAccount == $default['typesAccount']['poupanca']) {
+
+                    if (substr($account, 0, 3) != "510") {
+                        $result = "510" . $account;
+                    } else {
+
+                        $result = $account;
+
+                    }
+                } else {
+
+                    $result = $registrations->$field_id;
+                }
+
+                return substr($result, 0, -1); // Remove o ultimo caracter. Intende -se que o ultimo caracter é o DV da conta
+            },
+            'BEN_CONTA_DIGITO' => function ($registrations) use ($detahe1, $default) {
+                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+
+                $numberBank = $this->numberBank($registrations->$temp);
+
+                $temp = $detahe1['TIPO_CONTA']['field_id'];
+                $typeAccount = $registrations->$temp;
+
+                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+                $account = preg_replace('/[^0-9]/i', '', $registrations->$temp);
+
+                $dig = substr($account, -1);
+
+                $result = "";
+
+                if ($numberBank == '001' && $typeAccount == $default['typesAccount']['poupanca']) {
+
+                    if (substr($account, 0, 3) == "510") {
+                        $result = $dig;
+                    } else {
+
+                        $result = $default['savingsDigit'][$dig];
+
+                    }
+                } else {
+
+                    $result = $dig;
+                }
+
+                return is_string($result) ? strtoupper($result) : $result;
+
+            },
+            'BEN_DIGITO_CONTA_AGENCIA_80' => '',
+            'BEN_NOME' => function ($registrations) use ($detahe1) {
+                $field_id = $detahe1['BEN_NOME']['field_id'];
+                $result = substr($registrations->$field_id, 0, $detahe1['BEN_NOME']['length']);
+                return $result;
+            },
+            'BEN_DOC_ATRIB_EMPRESA_82' => '',
+            'DATA_PAGAMENTO' => function ($registrations) use ($detahe1) {
+                $date = new DateTime();
+                $date->add(new DateInterval('P1D'));
+                $weekday = $date->format('D');
+
+                $weekdayList = [
+                    'Mon' => true,
+                    'Tue' => true,
+                    'Wed' => true,
+                    'Thu' => true,
+                    'Fri' => true,
+                    'Sat' => false,
+                    'Sun' => false,
+                ];
+
+                while (!$weekdayList[$weekday]) {
+                    $date->add(new DateInterval('P1D'));
+                    $weekday = $date->format('D');
+                }
+
+                return $date->format('dmY');
+            },
+            'TIPO_MOEDA' => '',
+            'USO_BANCO_85' => '',
+            'VALOR_INTEIRO' => function ($registrations) use ($detahe1) {
+                $valor = '100,98';
+                $valor = preg_replace('/[^0-9]/i', '', $valor);
+
+                return $valor;
+            },
+            'USO_BANCO_88' => '',
+            'USO_BANCO_89' => '',
+            'USO_BANCO_90' => '',
+            'CODIGO_FINALIDADE_TED' => function ($registrations) use ($detahe1) {
+                $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
+                $numberBank = $this->numberBank($registrations->$temp);
+                if ($numberBank != "001") {
+                    return '10';
+                } else {
+                    return "";
+                }
+            },
+            'USO_BANCO_92' => '',
+            'USO_BANCO_93' => '',
+            'TIPO_CONTA' => '',
+        ];
+
+        $mappedDeletalhe2 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'NUMERO_REGISTRO' => '',
+            'SEGMENTO' => '',
+            'USO_BANCO_104' => '',
+            'BEN_TIPO_DOC' => function ($registrations) use ($detahe2, $default, $field_labelMap) {
+                $result = "";
+                $type_register = $default['type_register'];
+                if (in_array($registrations->category, $type_register['CPF'])) {
+                    $result = 1;
+                } elseif (in_array($registrations->category, $type_register['CNPJ'])) {
+                    $result = 2;
+                } else {
+                    $_SESSION['problems'][$registrations->number] = "verificar tipo de cadastro (CPF ou CNPJ) na inscrição";
+                }
+                return $result;
+            },
+            'BEN_CPF' => function ($registrations) use ($detahe2, $default, $field_labelMap) {
+                $type_register = $default['type_register'];
+
+                $result = "";
+
+                if (in_array($registrations->category, $type_register['CPF'])) {
+                    $temp = $default['field_CPF'];
+                    if (is_array($temp)) {
+                        foreach ($temp as $value) {
+                            $field_id = array_search(trim($value), $field_labelMap);
+                            if ($field_id) {
+                                $result = $registrations->$field_id;
+                                if (strlen($this->normalizeString($result)) != 11) {
+                                    $_SESSION['problems'][$registrations->number] = "CPF Inválido";
+                                }
+                            }
+
+                        }
+                    } else {
+                        $field_id = array_search(trim($temp), $field_labelMap);
+                        $result = $registrations->$field_id;
+
+                    }
+                } elseif (in_array($registrations->category, $type_register['CNPJ'])) {
+                    $temp = $default['field_CNPJ'];
+                    if (is_array($temp)) {
+                        foreach ($temp as $value) {
+                            $field_id = array_search(trim($value), $field_labelMap);
+                            if ($field_id) {
+                                $result = $registrations->$field_id;
+                                if (strlen($this->normalizeString($result)) != 14) {
+                                    $_SESSION['problems'][$registrations->number] = "CNPJ inválido";
+                                }
+                            }
+                        }
+                    } else {
+                        $field_id = array_search(trim($temp), $field_labelMap);
+                        $result = $registrations->$field_id;
+
+                    }
+                } else {
+                    $_SESSION['problems'][$registrations->number] = "verificar tipo de cadastro (CPF ou CNPJ) na inscrição.";
+                }
+
+                return $this->normalizeString($result);
+            },
+            'BEN_ENDERECO_LOGRADOURO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_LOGRADOURO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_LOGRADOURO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Nome_Logradouro'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_LOGRADOURO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+                $result = substr($result, 0, $length);
+
+                return $result;
+
+            },
+            'BEN_ENDERECO_NUMERO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_NUMERO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_NUMERO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Num'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_NUMERO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_COMPLEMENTO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_COMPLEMENTO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_COMPLEMENTO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Complemento'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_COMPLEMENTO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_BAIRRO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_BAIRRO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_BAIRRO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Bairro'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_BAIRRO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_CIDADE' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_CIDADE']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_CIDADE']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Municipio'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_CIDADE Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'BEN_ENDERECO_CEP' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_CEP']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_CEP']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_CEP'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_CEP Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+                return $result;
+            },
+            'BEN_ENDERECO_ESTADO' => function ($registrations) use ($detahe2, $app) {
+                $field_id = $detahe2['BEN_ENDERECO_ESTADO']['field_id'];
+                $length = $detahe2['BEN_ENDERECO_ESTADO']['length'];
+                $data = $registrations->$field_id;
+                $result = $data['En_Estado'];
+
+                if (strlen($result) > $length) {
+                    $app->log->info($registrations->number . " Campo BEN_ENDERECO_ESTADO Header 2 maior que o permitido o valor foi truncado. Máximo permitido = " . $length);
+                }
+
+                $result = substr($result, 0, $length);
+
+                return $result;
+            },
+            'USO_BANCO_114' => '',
+            'USO_BANCO_115' => '',
+            'USO_BANCO_116' => '',
+            'USO_BANCO_117' => '',
+        ];
+
+        $mappedTrailer1 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'USO_BANCO_126' => '',
+            'QUANTIDADE_REGISTROS_127' => '',
+            'VALOR_TOTAL_DOC_INTEIRO' => '',
+            'VALOR_TOTAL_DOC_DECIMAL' => '',
+            'USO_BANCO_130' => '',
+            'USO_BANCO_131' => '',
+            'USO_BANCO_132' => '',
+        ];
+
+        $mappedTrailer2 = [
+            'BANCO' => '',
+            'LOTE' => '',
+            'REGISTRO' => '',
+            'USO_BANCO_141' => '',
+            'QUANTIDADE_LOTES-ARQUIVO' => '',
+            'QUANTIDADE_REGISTROS_ARQUIVOS' => '',
+            'USO_BANCO_144' => '',
+            'USO_BANCO_145' => '',
+        ];
 
         /**
          * Separa os registros em 3 categorias
@@ -898,7 +1783,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $totalRegistros = 0;
 
         $complement = [];
-        $txt_data = $this->mountTxt($header1, $mappedHeader1, $txt_data, null, null);
+        $txt_data = $this->mountTxt($header1, $mappedHeader1, $txt_data, null, null, $app);
         $totalRegistros += 1;
 
         $txt_data .= $newline;
@@ -916,7 +1801,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
 
-            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
 
             $lotBBCorrente += 1;
@@ -924,17 +1809,20 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $_SESSION['valor'] = 0;
 
             $totaLotes++;
+            $numSeqRegistro = 0;
 
             //Detalhes 1 e 2
 
             foreach ($recordsBBCorrente as $key_records => $records) {
+                $numSeqRegistro++;
                 $complement = [
                     'LOTE' => $numLote,
+                    'NUMERO_REGISTRO' => $numSeqRegistro,
                 ];
-                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
-                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
                 $lotBBCorrente += 2;
@@ -951,7 +1839,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
             ];
 
-            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
             $totalRegistros += $lotBBCorrente;
         }
@@ -968,7 +1856,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'FORMA_LANCAMENTO' => 5,
                 'LOTE' => $numLote,
             ];
-            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
 
             $lotBBPoupanca += 1;
@@ -976,18 +1864,21 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $_SESSION['valor'] = 0;
 
             $totaLotes++;
+            $numSeqRegistro = 0;
 
             //Detalhes 1 e 2
 
             foreach ($recordsBBPoupanca as $key_records => $records) {
+                $numSeqRegistro++;
                 $complement = [
                     'LOTE' => $numLote,
+                    'NUMERO_REGISTRO' => $numSeqRegistro,
                 ];
 
-                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
-                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
 
                 $lotBBPoupanca += 2;
@@ -1004,7 +1895,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
 
-            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
 
             $totalRegistros += $lotBBPoupanca;
@@ -1023,7 +1914,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'LOTE' => $numLote,
             ];
 
-            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($header2, $mappedHeader2, $txt_data, null, $complement, $app);
 
             $txt_data .= $newline;
 
@@ -1032,18 +1923,21 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $_SESSION['valor'] = 0;
 
             $totaLotes++;
+            $numSeqRegistro = 0;
 
             //Detalhes 1 e 2
 
             foreach ($recordsOthers as $key_records => $records) {
+                $numSeqRegistro++;
                 $complement = [
                     'LOTE' => $numLote,
+                    'NUMERO_REGISTRO' => $numSeqRegistro,
                 ];
-                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe1, $mappedDeletalhe1, $txt_data, $records, $complement, $app);
 
                 $txt_data .= $newline;
 
-                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement);
+                $txt_data = $this->mountTxt($detahe2, $mappedDeletalhe2, $txt_data, $records, $complement, $app);
                 $txt_data .= $newline;
                 $lotOthers += 2;
 
@@ -1058,7 +1952,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 'VALOR_TOTAL_DOC_INTEIRO' => $valor,
                 'LOTE' => $numLote,
             ];
-            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement);
+            $txt_data = $this->mountTxt($trailer1, $mappedTrailer1, $txt_data, null, $complement, $app);
             $txt_data .= $newline;
             $totalRegistros += $lotOthers;
         }
@@ -1070,7 +1964,15 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'QUANTIDADE_REGISTROS_ARQUIVOS' => $totalRegistros,
         ];
 
-        $txt_data = $this->mountTxt($trailer2, $mappedTrailer2, $txt_data, null, $complement);
+        $txt_data = $this->mountTxt($trailer2, $mappedTrailer2, $txt_data, null, $complement, $app);
+
+        if (isset($_SESSION['problems'])) {
+            foreach ($_SESSION['problems'] as $key => $value) {
+                echo "<p>Problemas na inscrição " . $key . " => " . $value . " </p>";
+            }
+            unset($_SESSION['problems']);
+            die();
+        }
 
         // header('Content-type: text/utf-8');
         // echo $txt_data;
@@ -1288,7 +2190,8 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         } else {
             $data .= str_pad($value['default'], $length, " ");
         }
-        return substr($data, 0, $length);
+
+        return $data; //substr($data, 0, $length);
     }
 
     /**
@@ -1395,252 +2298,6 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         return $out;
     }
 
-    /**
-     * Local unificado para os mapas de campos dos exportadores CNAB240.
-     */
-    private function getMappings($detail1, $detail2, $default)
-    {
-        return [
-            "headerFile" => [
-                'BANCO' => '',
-                'LOTE' => '',
-                'REGISTRO' => '',
-                'USO_BANCO_12' => '',
-                'INSCRICAO_TIPO' => '',
-                'CPF_CNPJ_FONTE_PAG' => '',
-                'CONVENIO_BB1' => '',
-                'CONVENIO_BB2' => '',
-                'CONVENIO_BB3' => '',
-                'CONVENIO_BB4' => '',
-                'AGENCIA' => '',
-                'AGENCIA_DIGITO' => '',
-                'CONTA' => '',
-                'CONTA_DIGITO' => '',
-                'USO_BANCO_20' => '',
-                'NOME_EMPRESA' => '',
-                'NOME_BANCO' => '',
-                'USO_BANCO_23' => '',
-                'CODIGO_REMESSA' => '',
-                'DATA_GER_ARQUIVO' => function($registration) use ($detail1) {
-                    $date = new DateTime();
-                    return $date->format('d/m/Y');
-                },
-                'HORA_GER_ARQUIVO' => function($registration) use ($detail1) {
-                    $date = new DateTime();
-                    return $date->format('H:i:s');
-                },
-                'NUM_SERQUNCIAL_ARQUIVO' => '',
-                'LAYOUT_ARQUIVO' => '',
-                'DENCIDADE_GER_ARQUIVO' => '',
-                'USO_BANCO_30' => '',
-                'USO_BANCO_31' => '',
-            ],
-            "headerBatch" => [
-                'BANCO' => '',
-                'LOTE' => '',
-                'REGISTRO' => '',
-                'OPERACAO' => '',
-                'SERVICO' => '',
-                'FORMA_LANCAMENTO' => '',
-                'LAYOUT_LOTE' => '',
-                'USO_BANCO_43' => '',
-                'INSCRICAO_TIPO' => '',
-                'INSCRICAO_NUMERO' => '',
-                'CONVENIO_BB1' => '',
-                'CONVENIO_BB2' => '',
-                'CONVENIO_BB3' => '',
-                'CONVENIO_BB4' => '',
-                'AGENCIA' => '',
-                'AGENCIA_DIGITO' => '',
-                'CONTA' => '',
-                'CONTA_DIGITO' => '',
-                'USO_BANCO_51' => '',
-                'NOME_EMPRESA' => '',
-                'USO_BANCO_40' => '',
-                'LOGRADOURO' => '',
-                'NUMERO' => '',
-                'COMPLEMENTO' => '',
-                'CIDADE' => '',
-                'CEP' => '',
-                'ESTADO' => '',
-                'USO_BANCO_60' => '',
-                'USO_BANCO_61' => '',
-            ],
-            "detailA" => [
-                'BANCO' => '',
-                'LOTE' => '',
-                'REGISTRO' => '',
-                'NUMERO_REGISTRO' => '',
-                'SEGMENTO' => '',
-                'TIPO_MOVIMENTO' => '',
-                'CODIGO_MOVIMENTO' => '',
-                'CAMARA_CENTRALIZADORA' => '',
-                'BEN_CODIGO_BANCO' =>  function($registration) use ($detail1) {
-                    $field_id = $detail1['BEN_CODIGO_BANCO']['field_id'];
-                    return $this->numberBank($registration->$field_id);
-                },
-                'BEN_AGENCIA' => function($registration) use ($detail1) {
-                    $field_id = $detail1['BEN_AGENCIA']['field_id'];
-                    return $registration->$field_id;
-                },
-                'BEN_AGENCIA_DIGITO' => function($registration) use ($detail1) {
-                    $field_id = $detail1['BEN_AGENCIA_DIGITO']['field_id'];
-                    return $registration->$field_id;
-                },
-                'BEN_CONTA' => function($registration) use ($detail1, $default) {
-                    $field_id = $detail1['BEN_CODIGO_BANCO']['field_id'];
-                    $numBank = $this->numberBank($registration->field_id);
-                    $field_id = $detail1['TIPO_CONTA']['field_id'];
-                    $typeAccount = $registration->$field_id;
-                    $field_id = $detail1['BEN_CONTA']['field_id'];
-                    $account = $registration->$field_id;
-                    if (($numBank == "001") &&
-                        ($typeAccount == $default['typesAccount']['poupanca'])) {
-                        if (substr($account, 0, 3) != "510") {
-                            return ("510" . $account);
-                        }
-                        return $account;
-                    }
-                    return $registration->$field_id;
-                },
-                'BEN_CONTA_DIGITO' => function($registration) use ($detail1, $default) {
-                    $field_id = $detail1['BEN_CODIGO_BANCO']['field_id'];
-                    $numBank = $this->numberBank($registration->field_id);
-                    $field_id = $detail1['TIPO_CONTA']['field_id'];
-                    $typeAccount = $registration->$field_id;
-                    $field_id = $detail1['BEN_CONTA_DIGITO']['field_id'];
-                    $account = preg_replace('/[^0-9]/i', '', $registration->$field_id);
-                    $digit = substr($account, -1);
-                    if (($numBank == "001") &&
-                        ($typeAccount == $default['typesAccount']['poupanca'])) {
-                        if (substr($account, 0, 3) == "510") {
-                            return $digit;
-                        }
-                        return $default['savingsDigit'][$digit];
-                    }
-                    return $digit;
-                },
-                'BEN_DIGITO_CONTA_AGENCIA_80' => '',
-                'BEN_NOME' => function ($registration) use ($detail1) {
-                    $field_id = $detail1['BEN_NOME']['field_id'];
-                    return $registration->$field_id;
-                },
-                'BEN_DOC_ATRIB_EMPRESA_82' => '',
-                'DATA_PAGAMENTO' => function ($registration) {
-                    $date = new DateTime();
-                    $date->add(new DateInterval('P1D'));
-                    $weekday = $date->format('D');
-                    $weekdayList = [
-                        'Mon' => true,
-                        'Tue' => true,
-                        'Wed' => true,
-                        'Thu' => true,
-                        'Fri' => true,
-                        'Sat' => false,
-                        'Sun' => false,
-                    ];
-                    while (!$weekdayList[$weekday]) {
-                        $date->add(new DateInterval('P1D'));
-                        $weekday = $date->format('D');
-                    }
-                    return $date->format('d/m/Y');
-                },
-                'TIPO_MOEDA' => '',
-                'USO_BANCO_85' => '',
-                'VALOR_INTEIRO' => function ($registration) use ($detail1) {
-                    $amount = '100,50';
-                    $amount = preg_replace('/[^0-9]/i', '', $amount);
-                    return $amount;
-                },
-                'USO_BANCO_88' => '',
-                'USO_BANCO_89' => '',
-                'USO_BANCO_90' => '',
-                'CODIGO_FINALIDADE_TED' => function ($registration) use ($detail1) {
-                    $temp = $detail1['BEN_CODIGO_BANCO']['field_id'];
-                    $numberBank = $this->numberBank($registration->$temp);
-                    if ($numberBank != "001") {
-                        return "10";
-                    }
-                    return "";
-                },
-                'USO_BANCO_92' => '',
-                'USO_BANCO_93' => '',
-                'TIPO_CONTA' => '',
-            ],
-            "detailB" => [
-                'BANCO' => '',
-                'LOTE' => '',
-                'REGISTRO' => '',
-                'NUMERO_REGISTRO' => '',
-                'SEGMENTO' => '',
-                'USO_BANCO_104' => '',
-                'BEN_TIPO_DOC' => '',
-                'BEN_CPF' => '',
-                'BEN_ENDERECO_LOGRADOURO' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_LOGRADOURO']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_Nome_Logradouro'];
-                },
-                'BEN_ENDERECO_NUMERO' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_NUMERO']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_Num'];
-                },
-                'BEN_ENDERECO_COMPLEMENTO' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_COMPLEMENTO']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_Complemento'];
-                },
-                'BEN_ENDERECO_BAIRRO' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_BAIRRO']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_Bairro'];
-                },
-                'BEN_ENDERECO_CIDADE' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_CIDADE']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_Municipio'];
-                },
-                'BEN_ENDERECO_CEP' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_CEP']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_CEP'];
-                },
-                'BEN_ENDERECO_ESTADO' => function ($registration) use ($detail2) {
-                    $field_id = $detail2['BEN_ENDERECO_ESTADO']['field_id'];
-                    $data = $registration->$field_id;
-                    return $data['En_Estado'];
-                },
-                'USO_BANCO_114' => '',
-                'USO_BANCO_115' => '',
-                'USO_BANCO_116' => '',
-                'USO_BANCO_117' => '',
-            ],
-            "trailerBatch" => [
-                'BANCO' => '',
-                'LOTE' => '',
-                'REGISTRO' => '',
-                'USO_BANCO_126' => '',
-                'QUANTIDADE_REGISTROS_127' => '',
-                'VALOR_TOTAL_DOC_INTEIRO' => '',
-                'VALOR_TOTAL_DOC_DECIMAL' => '',
-                'USO_BANCO_130' => '',
-                'USO_BANCO_131' => '',
-                'USO_BANCO_132' => '',
-            ],
-            "trailerFile" => [
-                'BANCO' => '',
-                'LOTE' => '',
-                'REGISTRO' => '',
-                'USO_BANCO_141' => '',
-                'QUANTIDADE_LOTES-ARQUIVO' => '',
-                'QUANTIDADE_REGISTROS_ARQUIVOS' => '',
-                'USO_BANCO_144' => '',
-                'USO_BANCO_145' => '',
-            ]
-        ];
-    }
-
     /*
      * Função para retornar o número do banco, levando como base de pesquisa o nome do banco
      * Todos os textos que entram pelo parâmetro $bankName, são primeiro colocados em lowercase em seguida a primeira letra
@@ -1667,7 +2324,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
      * Sempre será respeitado os valores de tamanho de string e tipo que estão no arquivo de config
      *
      */
-    private function mountTxt($array, $mapped, $txt_data, $register, $complement)
+    private function mountTxt($array, $mapped, $txt_data, $register, $complement, $app)
     {
 
         if ($complement) {
@@ -1675,12 +2332,17 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 $array[$key]['default'] = $value;
             }
         }
-        //$_SESSION['valor'] = 0;
+
         foreach ($array as $key => $value) {
             if ($value['field_id']) {
                 if (is_callable($mapped[$key])) {
                     $data = $mapped[$key];
                     $value['default'] = $data($register);
+                    if (strlen($data($register)) > $value['length']) {
+                        $app->log->info($register . " Esta com campo " . $key . " Maior que o permitido. Máximo permitido " . $value['length']);
+
+                    }
+
                     $value['field_id'] = null;
                     $txt_data .= $this->createString($value);
                     $value['default'] = null;
@@ -1880,5 +2542,14 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         }
         $extra = substr($value, 0, ($len - $size));
         return (strspn($extra, "0") == ($len - $size));
+    }
+
+    /*
+     * Normaliza uma string
+     */
+    private function normalizeString($valor)
+    {
+        $valor = Normalizer::normalize($valor, Normalizer::FORM_D);
+        return preg_replace('/[^a-z0-9 ]/i', '', $valor);
     }
 }
