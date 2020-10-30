@@ -185,7 +185,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
             },
             'USO_BANCO_20' => '',
-            'NOME_EMPRESA' => '',
+            'NOME_EMPRESA' => function ($registrations) use ($header1, $app) {
+                $result =  $header1['NOME_EMPRESA']['default'];
+                return substr($result, 0, 30);
+            },
             'NOME_BANCO' => '',
             'USO_BANCO_23' => '',
             'CODIGO_REMESSA' => '',
@@ -219,39 +222,42 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'CONVENIO_BB2' => '',
             'CONVENIO_BB3' => '',
             'CONVENIO_BB4' => '',
-            'AGENCIA' => function ($registrations) use ($header1) {
+            'AGENCIA' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['AGENCIA'];
+                $field_id = $header2['AGENCIA'];
                 $value = $this->normalizeString($field_id['default']);
                 return substr($value, 0, 4);
 
             },
-            'AGENCIA_DIGITO' => function ($registrations) use ($header1) {
+            'AGENCIA_DIGITO' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['AGENCIA_DIGITO'];
+                $field_id = $header2['AGENCIA_DIGITO'];
                 $value = $this->normalizeString($field_id['default']);
                 $result = is_string($value) ? strtoupper($value) : $value;
                 return $result;
 
             },
-            'CONTA' => function ($registrations) use ($header1) {
+            'CONTA' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['CONTA'];
+                $field_id = $header2['CONTA'];
                 $value = $this->normalizeString($field_id['default']);
                 return substr($value, 0, 12);
               
 
             },
-            'CONTA_DIGITO' => function ($registrations) use ($header1) {
+            'CONTA_DIGITO' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['CONTA_DIGITO'];
+                $field_id = $header2['CONTA_DIGITO'];
                 $value = $this->normalizeString($field_id['default']);
                 $result = is_string($value) ? strtoupper($value) : $value;
                 return $result;
 
             },
             'USO_BANCO_51' => '',
-            'NOME_EMPRESA' => '',
+            'NOME_EMPRESA' => function ($registrations) use ($header2, $app) {
+                $result =  $header2['NOME_EMPRESA']['default'];
+                return substr($result, 0, 30);
+            },
             'USO_BANCO_40' => '',
             'LOGRADOURO' => '',
             'NUMERO' => '',
@@ -275,22 +281,43 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'BEN_CODIGO_BANCO' => function ($registrations) use ($detahe1) {
                 $field_id = $detahe1['BEN_CODIGO_BANCO']['field_id'];
                 return $this->numberBank($registrations->$field_id);
-            },
-            'BEN_AGENCIA' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_AGENCIA']['field_id'];
-                $age = $registrations->$field_id;
 
+            },
+            'BEN_AGENCIA' => function ($registrations) use ($detahe1, $default) {
+                
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $field_id = $default['fieldsWalletDigital']['agency'];                    
+                }else{
+                    $field_id = $detahe1['BEN_AGENCIA']['field_id'];
+                }
+
+                $age = $this->normalizeString($registrations->$field_id);
+                
                 if (strlen($age) > 4) {
+                    
                     $result = substr($age, 0, 4);
                 } else {
                     $result = $age;
                 }
-                return $result;
+               
+                return is_string($result) ? strtoupper($result) : $result;
             },
-            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1) {
+            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1, $default) {
                 $result = "";
-                $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
-                $dig = $registrations->$field_id;
+
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $field_id = $default['fieldsWalletDigital']['agency'];                    
+                }else{
+                    $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
+                }
+                
+                $dig = $this->normalizeString($registrations->$field_id);
                 if (strlen($dig) > 4) {
                     $result = substr($dig, -1);
                 } else {
@@ -299,49 +326,59 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
                 return is_string($result) ? strtoupper($result) : $result;
             },
-            'BEN_CONTA' => function ($registrations) use ($detahe1, $default, $app) {
+            'BEN_CONTA' => function ($registrations) use ($detahe1, $default, $app) {                
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $field_id = $default['fieldsWalletDigital']['account'];                    
+                }else{
+                    $field_id = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+                }
+
+                $account = $this->normalizeString($registrations->$field_id);
+
+                $temp = $detahe1['TIPO_CONTA']['field_id'];
+                $typeAccount = $registrations->$temp;
+
                 $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
                 if($temp){
                     $numberBank = $this->numberBank($registrations->$temp);
                 }else{
                     $numberBank = $default['defaultBank'];
                 }
-              
-                $temp = $detahe1['TIPO_CONTA']['field_id'];
-                $typeAccount = $registrations->$temp;
 
-                $field_id = $detahe1['BEN_CONTA']['field_id'];
-                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-
-                $account = $registrations->$field_id;
-                
-                if(!$account && ($temp == $field_id)){
+                if(!$account){
                     $app->log->info($registrations->number . " Conta bancária não informada");
                     return " ";
                 }
 
-                $result = "";
-                if ($numberBank == '001' && $typeAccount == $default['typesAccount']['poupanca']) {
+                $result  = "";
+                if($typeAccount == $default['typesAccount']['poupanca']){
 
-                    if (substr($account, 0, 3) != "510") {
+                    if (($numberBank == '001') && (substr($account, 0, 3) != "510")) {
+
                         $result = "510" . $account;
-                    } else {
-
+                         
+                    }else{
                         $result = $account;
-
                     }
-                } else {
-
-                    $result = $registrations->$field_id;
+                }else{
+                    $result = $account;
                 }
+                
+                $result = preg_replace('/[^0-9]/i', '',$result);
 
                 if($temp === $field_id){
-                    return substr($result, 0, -1); // Remove o ultimo caracter. Intende -se que o ultimo caracter é o DV da conta
+                    return substr($this->normalizeString($result), 0, -1); // Remove o ultimo caracter. Intende -se que o ultimo caracter é o DV da conta
 
                 }else{
                     return $result;
 
                 }
+                
+              
+               
               
             },
             'BEN_CONTA_DIGITO' => function ($registrations) use ($detahe1, $default, $app) {
@@ -354,11 +391,19 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     $numberBank = $default['defaultBank'];
                 }
 
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $temp = $default['fieldsWalletDigital']['account'];                    
+                }else{
+                    $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+                }
+
+                $account = $this->normalizeString(preg_replace('/[^0-9]/i', '', $registrations->$temp));
+
                 $temp = $detahe1['TIPO_CONTA']['field_id'];
                 $typeAccount = $registrations->$temp;
-
-                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-                $account = preg_replace('/[^0-9]/i', '', $registrations->$temp);
                 
                 $dig = substr($account, -1);
 
@@ -388,12 +433,12 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'BEN_DIGITO_CONTA_AGENCIA_80' => '',
             'BEN_NOME' => function ($registrations) use ($detahe1) {
                 $field_id = $detahe1['BEN_NOME']['field_id'];
-                $result = substr($registrations->$field_id, 0, $detahe1['BEN_NOME']['length']);
+                $result = substr($this->normalizeString($registrations->$field_id), 0, $detahe1['BEN_NOME']['length']);                
                 return $result;
             },
             'BEN_DOC_ATRIB_EMPRESA_82' => '',
             'DATA_PAGAMENTO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
+                $date = new DateTime();                
                 $date->add(new DateInterval('P1D'));
                 $weekday = $date->format('D');
 
@@ -411,15 +456,19 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     $date->add(new DateInterval('P1D'));
                     $weekday = $date->format('D');
                 }
-
+                
                 return $date->format('dmY');
             },
             'TIPO_MOEDA' => '',
             'USO_BANCO_85' => '',
-            'VALOR_INTEIRO' => function ($registrations) use ($detahe1) {
-                $valor = '100.98';
+            'VALOR_INTEIRO' => function ($registrations) use ($detahe1, $default) {
+                $field_id = $default['womanMonoParent'];
+                if($registrations->$field_id == "SIM"){
+                    $valor = '6000.00';
+                }else{
+                    $valor = '3000.00';
+                }
                 $valor = preg_replace('/[^0-9]/i', '', $valor);
-
                 return $valor;
             },
             'USO_BANCO_88' => '',
@@ -571,7 +620,8 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $recordsOthers = [];
         $field_TipoConta = $default['field_TipoConta'];
         $field_banco = $default['field_banco'];
-        $defaultBank = $default['defaultBank'];
+        $defaultBank = $default['defaultBank'];       
+        $correntistabb = $default['correntistabb'];
         $countMci460 = 0;
         
         if($default['ducumentsType']['mci460']){ // Caso exista separação entre bancarizados e desbancarizados
@@ -580,10 +630,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
                 foreach ($registrations as $value) {   
                     
-                    if ($value->$field_TipoConta == "Conta corrente") {
+                    if ($value->$field_TipoConta == "Conta corrente" && $value->$correntistabb == "SIM") {
                         $recordsBBCorrente[] = $value;
 
-                    } else if ($value->$field_TipoConta == "Conta poupança"){
+                    } else if ($value->$field_TipoConta == "Conta poupança" && $value->$correntistabb == "SIM"){
                         $recordsBBPoupanca[] = $value;
                     
                     }else{
@@ -595,7 +645,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             
             }else{
                 foreach ($registrations as $value) {          
-                    if ($this->numberBank($value->$field_banco) == "001") {               
+                    if ($this->numberBank($value->$field_banco) == "001" && $value->$correntistabb == "SIM") {               
                         if ($value->$field_TipoConta == "Conta corrente") {
                             $recordsBBCorrente[] = $value;
                         } else {
@@ -628,7 +678,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         if($default['ducumentsType']['mci460']){
             $app->log->info((count($recordsBBPoupanca) + count($recordsBBCorrente)) . " CNAB240");
             $app->log->info($countMci460 . " MCI460");
-            sleep(10);
+            sleep(5);
         }
         
         
@@ -699,7 +749,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             }
 
             //treiller 1
-            $lotBBCorrente + 1; // Adiciona 1 para obedecer a regra de somar o treiller 1
+            $lotBBCorrente += 1; // Adiciona 1 para obedecer a regra de somar o treiller 1
             $valor = explode(".", $_SESSION['valor']);
             $valor = preg_replace('/[^0-9]/i', '', $valor[0]);
             $complement = [
@@ -1069,8 +1119,6 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                 $field_id = $header1['CONTA'];
                 $value = $this->normalizeString($field_id['default']);
                 return substr($value, 0, 12);
-               
-
             },
             'CONTA_DIGITO' => function ($registrations) use ($header1) {
                 $result = "";
@@ -1081,7 +1129,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
             },
             'USO_BANCO_20' => '',
-            'NOME_EMPRESA' => '',
+            'NOME_EMPRESA' => function ($registrations) use ($header1, $app) {
+                $result =  $header1['NOME_EMPRESA']['default'];
+                return substr($result, 0, 30);
+            },
             'NOME_BANCO' => '',
             'USO_BANCO_23' => '',
             'CODIGO_REMESSA' => '',
@@ -1115,39 +1166,42 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'CONVENIO_BB2' => '',
             'CONVENIO_BB3' => '',
             'CONVENIO_BB4' => '',
-            'AGENCIA' => function ($registrations) use ($header1) {
+            'AGENCIA' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['AGENCIA'];
+                $field_id = $header2['AGENCIA'];
                 $value = $this->normalizeString($field_id['default']);
                 return substr($value, 0, 4);
 
             },
-            'AGENCIA_DIGITO' => function ($registrations) use ($header1) {
+            'AGENCIA_DIGITO' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['AGENCIA_DIGITO'];
+                $field_id = $header2['AGENCIA_DIGITO'];
                 $value = $this->normalizeString($field_id['default']);
                 $result = is_string($value) ? strtoupper($value) : $value;
                 return $result;
 
             },
-            'CONTA' => function ($registrations) use ($header1) {
+            'CONTA' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['CONTA'];
+                $field_id = $header2['CONTA'];
                 $value = $this->normalizeString($field_id['default']);
                 return substr($value, 0, 12);
-               
+              
 
             },
-            'CONTA_DIGITO' => function ($registrations) use ($header1) {
+            'CONTA_DIGITO' => function ($registrations) use ($header2) {
                 $result = "";
-                $field_id = $header1['CONTA_DIGITO'];
+                $field_id = $header2['CONTA_DIGITO'];
                 $value = $this->normalizeString($field_id['default']);
                 $result = is_string($value) ? strtoupper($value) : $value;
                 return $result;
 
             },
             'USO_BANCO_51' => '',
-            'NOME_EMPRESA' => '',
+            'NOME_EMPRESA' => function ($registrations) use ($header2, $app) {
+                $result =  $header2['NOME_EMPRESA']['default'];
+                return substr($result, 0, 30);
+            },
             'USO_BANCO_40' => '',
             'LOGRADOURO' => '',
             'NUMERO' => '',
@@ -1171,22 +1225,43 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'BEN_CODIGO_BANCO' => function ($registrations) use ($detahe1) {
                 $field_id = $detahe1['BEN_CODIGO_BANCO']['field_id'];
                 return $this->numberBank($registrations->$field_id);
-            },
-            'BEN_AGENCIA' => function ($registrations) use ($detahe1) {
-                $field_id = $detahe1['BEN_AGENCIA']['field_id'];
-                $age = $registrations->$field_id;
 
+            },
+            'BEN_AGENCIA' => function ($registrations) use ($detahe1, $default) {
+                
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $field_id = $default['fieldsWalletDigital']['agency'];                    
+                }else{
+                    $field_id = $detahe1['BEN_AGENCIA']['field_id'];
+                }
+
+                $age = $this->normalizeString($registrations->$field_id);
+                
                 if (strlen($age) > 4) {
+                    
                     $result = substr($age, 0, 4);
                 } else {
                     $result = $age;
                 }
-                return $result;
+               
+                return is_string($result) ? strtoupper($result) : $result;
             },
-            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1) {
+            'BEN_AGENCIA_DIGITO' => function ($registrations) use ($detahe1, $default) {
                 $result = "";
-                $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
-                $dig = $registrations->$field_id;
+
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $field_id = $default['fieldsWalletDigital']['agency'];                    
+                }else{
+                    $field_id = $detahe1['BEN_AGENCIA_DIGITO']['field_id'];
+                }
+                
+                $dig = $this->normalizeString($registrations->$field_id);
                 if (strlen($dig) > 4) {
                     $result = substr($dig, -1);
                 } else {
@@ -1195,49 +1270,59 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
                 return is_string($result) ? strtoupper($result) : $result;
             },
-            'BEN_CONTA' => function ($registrations) use ($detahe1, $default, $app) {
+            'BEN_CONTA' => function ($registrations) use ($detahe1, $default, $app) {                
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $field_id = $default['fieldsWalletDigital']['account'];                    
+                }else{
+                    $field_id = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+                }
+
+                $account = $this->normalizeString($registrations->$field_id);
+
+                $temp = $detahe1['TIPO_CONTA']['field_id'];
+                $typeAccount = $registrations->$temp;
+
                 $temp = $detahe1['BEN_CODIGO_BANCO']['field_id'];
                 if($temp){
                     $numberBank = $this->numberBank($registrations->$temp);
                 }else{
                     $numberBank = $default['defaultBank'];
                 }
-              
-                $temp = $detahe1['TIPO_CONTA']['field_id'];
-                $typeAccount = $registrations->$temp;
 
-                $field_id = $detahe1['BEN_CONTA']['field_id'];
-                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-
-                $account = $registrations->$field_id;
-                
-                if(!$account && ($temp == $field_id)){
+                if(!$account){
                     $app->log->info($registrations->number . " Conta bancária não informada");
                     return " ";
                 }
 
-                $result = "";
-                if ($numberBank == '001' && $typeAccount == $default['typesAccount']['poupanca']) {
+                $result  = "";
+                if($typeAccount == $default['typesAccount']['poupanca']){
 
-                    if (substr($account, 0, 3) != "510") {
+                    if (($numberBank == '001') && (substr($account, 0, 3) != "510")) {
+
                         $result = "510" . $account;
-                    } else {
-
+                         
+                    }else{
                         $result = $account;
-
                     }
-                } else {
-
-                    $result = $registrations->$field_id;
+                }else{
+                    $result = $account;
                 }
+                
+                $result = preg_replace('/[^0-9]/i', '',$result);
 
                 if($temp === $field_id){
-                    return substr($result, 0, -1); // Remove o ultimo caracter. Intende -se que o ultimo caracter é o DV da conta
+                    return substr($this->normalizeString($result), 0, -1); // Remove o ultimo caracter. Intende -se que o ultimo caracter é o DV da conta
 
                 }else{
                     return $result;
 
                 }
+                
+              
+               
               
             },
             'BEN_CONTA_DIGITO' => function ($registrations) use ($detahe1, $default, $app) {
@@ -1250,11 +1335,19 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     $numberBank = $default['defaultBank'];
                 }
 
+                $temp = $default['formoReceipt'];
+                $formoReceipt = $registrations->$temp; 
+
+                if($formoReceipt == "CARTEIRA DIGITAL BB"){
+                    $temp = $default['fieldsWalletDigital']['account'];                    
+                }else{
+                    $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
+                }
+
+                $account = $this->normalizeString(preg_replace('/[^0-9]/i', '', $registrations->$temp));
+
                 $temp = $detahe1['TIPO_CONTA']['field_id'];
                 $typeAccount = $registrations->$temp;
-
-                $temp = $detahe1['BEN_CONTA_DIGITO']['field_id'];
-                $account = preg_replace('/[^0-9]/i', '', $registrations->$temp);
                 
                 $dig = substr($account, -1);
 
@@ -1284,12 +1377,12 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'BEN_DIGITO_CONTA_AGENCIA_80' => '',
             'BEN_NOME' => function ($registrations) use ($detahe1) {
                 $field_id = $detahe1['BEN_NOME']['field_id'];
-                $result = substr($registrations->$field_id, 0, $detahe1['BEN_NOME']['length']);
+                $result = substr($this->normalizeString($registrations->$field_id), 0, $detahe1['BEN_NOME']['length']);
                 return $result;
             },
             'BEN_DOC_ATRIB_EMPRESA_82' => '',
             'DATA_PAGAMENTO' => function ($registrations) use ($detahe1) {
-                $date = new DateTime();
+                $date = new DateTime();                
                 $date->add(new DateInterval('P1D'));
                 $weekday = $date->format('D');
 
@@ -1307,15 +1400,19 @@ class Remessas extends \MapasCulturais\Controllers\Registration
                     $date->add(new DateInterval('P1D'));
                     $weekday = $date->format('D');
                 }
-
+                
                 return $date->format('dmY');
             },
             'TIPO_MOEDA' => '',
             'USO_BANCO_85' => '',
             'VALOR_INTEIRO' => function ($registrations) use ($detahe1) {
-                $valor = '100.98';
+                $field_id = $default['womanMonoParent'];
+                if($registrations->$field_id == "SIM"){
+                    $valor = '6000.00';
+                }else{
+                    $valor = '3000.00';
+                }
                 $valor = preg_replace('/[^0-9]/i', '', $valor);
-
                 return $valor;
             },
             'USO_BANCO_88' => '',
@@ -1467,7 +1564,8 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $recordsOthers = [];
         $field_TipoConta = array_search(trim($default['field_TipoConta']), $field_labelMap);
         $field_banco = array_search(trim($default['field_banco']), $field_labelMap);
-        $defaultBank = $default['defaultBank'];
+        $defaultBank = $default['defaultBank'];       
+        $correntistabb = $default['correntistabb'];
         $countMci460 = 0;
 
         if($default['ducumentsType']['mci460']){ // Caso exista separação entre bancarizados e desbancarizados
@@ -1476,10 +1574,10 @@ class Remessas extends \MapasCulturais\Controllers\Registration
 
                 foreach ($registrations as $value) {   
                     
-                    if ($value->$field_TipoConta == "Conta corrente") {
+                    if ($value->$field_TipoConta == "Conta corrente" && $value->$correntistabb == "SIM") {
                         $recordsBBCorrente[] = $value;
 
-                    } else if ($value->$field_TipoConta == "Conta poupança"){
+                    } else if ($value->$field_TipoConta == "Conta poupança" && $value->$correntistabb == "SIM"){
                         $recordsBBPoupanca[] = $value;
                     
                     }else{
@@ -1491,7 +1589,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             
             }else{
                 foreach ($registrations as $value) {          
-                    if ($this->numberBank($value->$field_banco) == "001") {               
+                    if ($this->numberBank($value->$field_banco) == "001" && $value->$correntistabb == "SIM") {             
                         if ($value->$field_TipoConta == "Conta corrente") {
                             $recordsBBCorrente[] = $value;
                         } else {
@@ -1524,7 +1622,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         if($default['ducumentsType']['mci460']){
             $app->log->info((count($recordsBBPoupanca) + count($recordsBBCorrente)) . " CNAB240");
             $app->log->info($countMci460 . " MCI460");
-            sleep(10);
+            sleep(5);
         }
 
          //Verifica se existe registros em algum dos arrays
@@ -1791,7 +1889,7 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $data .= str_pad($value['default'], $length, " ");
         }
 
-        return $data; //substr($data, 0, $length);
+        return substr($data, 0, $length);
     }
 
     /*
