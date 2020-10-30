@@ -33,6 +33,23 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         $this->entityClassName = '\MapasCulturais\Entities\Registration';
         $this->layout = 'aldirblanc';
     }
+
+    protected function filterRegistrations(array $registrations) {
+        $app = App::i();
+        
+        $_regs = [];
+        foreach ($registrations as $registration) {
+            if ($this->config['exportador_requer_homologacao']) {
+                if (in_array($registration->consolidatedResult, ['10', 'homologado']) ) {
+                    $_regs[] = $registration;
+                }
+            } else {
+                $_regs[] = $registration;
+            }
+        }
+        
+        return $_regs;
+    }
     
     /**
      * Implementa o exportador TXT no modelo CNAB 240, para envio de remessas ao banco do Brasil inciso1
@@ -136,6 +153,8 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             $registrations = $query->getResult();
 
         }
+
+        $this->filterRegistrations($registrations);
 
         if (empty($registrations)) {
             echo "Não foram encontrados registros.";
@@ -433,7 +452,11 @@ class Remessas extends \MapasCulturais\Controllers\Registration
             'BEN_DIGITO_CONTA_AGENCIA_80' => '',
             'BEN_NOME' => function ($registrations) use ($detahe1) {
                 $field_id = $detahe1['BEN_NOME']['field_id'];
-                $result = substr($this->normalizeString($registrations->$field_id), 0, $detahe1['BEN_NOME']['length']);                
+                $result = substr($this->normalizeString($registrations->$field_id), 0, $detahe1['BEN_NOME']['length']);
+                // if($result == "Daniel Dias Victor"){
+                //     var_dump($registrations->number);
+                //     exit();
+                // }                
                 return $result;
             },
             'BEN_DOC_ATRIB_EMPRESA_82' => '',
