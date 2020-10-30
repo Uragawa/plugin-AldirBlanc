@@ -63,6 +63,7 @@ class Plugin extends \MapasCulturais\Plugin
             'config-cnab240-inciso1' => require_once env('AB_TXT_CANAB240_INCISO1', __DIR__ . '/config-cnab240-inciso1.php'),
             'config-cnab240-inciso2' => require_once env('AB_TXT_CANAB240_INCISO2', __DIR__ . '/config-cnab240-inciso2.php'),
             'config-bankdata' => require_once env('AB_CONFIG_BANKDATA', __DIR__ . '/config-bankdata.php'),
+            'config-mci460' => require_once env('AB_CONFIG_BANKDATA', __DIR__ . '/config-mci460.php'),
 
             // só libera para os homologadores as inscrićões que já tenham sido validadas pelos validadores configurados
             'homologacao_requer_validacao' => (array) json_decode(env('HOMOLOG_REQ_VALIDACOES', '[]')),
@@ -73,10 +74,10 @@ class Plugin extends \MapasCulturais\Plugin
         ];
 
         $skipConfig = false;
-        
+
         $app->applyHookBoundTo($this, 'aldirblanc.config',[&$config,&$skipConfig]);
 
-        
+
         if (!$skipConfig) {
             $cache_id = __METHOD__ . ':' . 'config';
 
@@ -87,14 +88,14 @@ class Plugin extends \MapasCulturais\Plugin
                 if(!empty($config['inciso2_opportunity_ids'])){
                     $app->cache->save($cache_id, $config, 3600);
                 }
-                
+
             }
         }
         parent::__construct($config);
     }
 
     public function configOpportunitiesIds($config) {
-        
+
         if(empty($config['project_id'])) {
             return $config;
         }
@@ -116,7 +117,7 @@ class Plugin extends \MapasCulturais\Plugin
         $opportunitiesIds = [];
         foreach($config['inciso2'] as $value) {
             $value = (array) $value;
-            
+
             $opportunity = $app->repo('Opportunity')->findByProjectAndOpportunityMeta($project, 'aldirblanc_city', $value['city']);
             if(!empty($opportunity)) {
                 $city = $value['city'];
@@ -127,7 +128,7 @@ class Plugin extends \MapasCulturais\Plugin
         if(!empty($opportunitiesIds)) {
             $config['inciso2_opportunity_ids'] = array_merge( $config['inciso2_opportunity_ids'], $opportunitiesIds);
         }
-        
+
         return $config;
     }
 
@@ -145,7 +146,7 @@ class Plugin extends \MapasCulturais\Plugin
     public function _init()
     {
         $app = App::i();
-        
+
         $plugin = $this;
 
         //Botão exportador CNAB240 BB
@@ -156,12 +157,12 @@ class Plugin extends \MapasCulturais\Plugin
             $opportunities_ids = array_merge($inciso1Ids, $inciso2Ids, $inciso3Ids);
             $requestedOpportunity = $this->controller->requestedEntity; //Tive que chamar o controller para poder requisitar a entity
             $opportunity = $requestedOpportunity->id;
-            
+
             $regSelected = $app->repo('Registration')->findBy([
                 'status' => 10,
                 'opportunity' => $opportunity
             ]);
-                
+
 
             if(($requestedOpportunity->canUser('@control')) && in_array($requestedOpportunity->id,$opportunities_ids) ) {
                 $app->view->enqueueScript('app', 'aldirblanc', 'aldirblanc/app.js');
@@ -176,17 +177,17 @@ class Plugin extends \MapasCulturais\Plugin
                     $inciso = 3;
 
                 }
-                
+
                 if($regSelected){
                     $this->part('aldirblanc/cnab240-button', ['inciso' => $inciso, 'opportunity' => $opportunity]);
                 }
-                
+
             }
         });
 
         /**
          * só consolida as avaliações para "selecionado" se tiver acontecido as validações (dataprev, etc)
-         * 
+         *
          * @TODO: implementar para método de avaliaçào documental
          */
         $app->hook('entity(Registration).consolidateResult', function(&$result, $caller) use($plugin, $app) {
@@ -196,7 +197,7 @@ class Plugin extends \MapasCulturais\Plugin
             if ($plugin->config['inciso2_enabled']) {
                 $ids = $plugin->config['inciso2_opportunity_ids'];
             }
-            
+
             if ($plugin->config['inciso1_enabled']) {
                 $ids[] = $plugin->config['inciso1_opportunity_id'];
             }
@@ -213,7 +214,7 @@ class Plugin extends \MapasCulturais\Plugin
             // se a consolidação não é para selecionada (statu = 10) pode continuar
             if ($result != '10') {
                 return;
-            } 
+            }
 
             $can_consolidate = true;
 
@@ -261,11 +262,11 @@ class Plugin extends \MapasCulturais\Plugin
                 if ($plugin->config['inciso2_enabled']) {
                     $ids = $plugin->config['inciso2_opportunity_ids'];
                 }
-                
+
                 if ($plugin->config['inciso1_enabled']) {
                     $ids[] = $plugin->config['inciso1_opportunity_id'];
                 }
-    
+
                 if (!in_array($this->opportunity->id, $ids)) {
                     return;
                 }
@@ -273,7 +274,7 @@ class Plugin extends \MapasCulturais\Plugin
                 if($user->is('guest')) {
                     return;
                 }
-    
+
                 if ($user->aldirblanc_validador) {
                     return;
                 }
@@ -293,7 +294,7 @@ class Plugin extends \MapasCulturais\Plugin
                         }
                     }
                 }
-                
+
             });
         }
 
@@ -303,7 +304,7 @@ class Plugin extends \MapasCulturais\Plugin
             }
             $this->part('aldirblanc/generate-opportunities-button');
         });
-        
+
         // add hooks
         $app->hook('mapasculturais.styles', function () use ($app) {
             $app->view->printStyles('aldirblanc');
@@ -323,9 +324,9 @@ class Plugin extends \MapasCulturais\Plugin
                 if(!empty($fields)) {
                     $can_edit = false;
                 }
-            }            
+            }
         });
-        
+
         //No cadastro da oportunidade (inciso2), apresenta mensagem de bloqueio de edição das categorias
         $app->hook('template(opportunity.<<create|edit>>.categories-messages):begin', function ($entity) use($app) {
             if(!$app->user->is('admin')) {
@@ -333,9 +334,9 @@ class Plugin extends \MapasCulturais\Plugin
                 if(!empty($fields)) {
                     $this->part('aldirblanc/categories-messages');
                 }
-            }            
+            }
         });
-        
+
 
         $app->hook('template(subsite.<<create|edit>>.tabs):end', function () {
             $this->part('aldirblanc/subsite-tab');
@@ -357,7 +358,7 @@ class Plugin extends \MapasCulturais\Plugin
          */
         $app->hook('controller(auth).render(<<*>>)', function() use ($app, $plugin) {
             $redirect_url = $_SESSION['mapasculturais.auth.redirect_path'] ?? '';
-            
+
             if(strpos($redirect_url, '/aldirblanc') === 0){
                 $plugin->registerAssets();
 
@@ -369,17 +370,17 @@ class Plugin extends \MapasCulturais\Plugin
         $app->hook('auth.createUser:redirectUrl', function(&$redirectUrl) {
             if(isset($_SESSION['mapasculturais.auth.redirect_path']) && strpos($_SESSION['mapasculturais.auth.redirect_path'], '/aldirblanc') === 0) {
                 $redirectUrl =  '/aldirblanc';
-            } 
+            }
         });
 
         $plugin = $this;
 
         /**
-         * Na criação da inscrição, define os metadados inciso2_opportunity_id ou 
+         * Na criação da inscrição, define os metadados inciso2_opportunity_id ou
          * inciso1_opportunity_id do agente responsável pela inscrição
          */
         $app->hook('entity(Registration).save:after', function() use ($plugin) {
-            
+
             if(in_array($this->opportunity->id, $plugin->config['inciso2_opportunity_ids'])){
                 $agent = $this->owner;
                 $agent->aldirblanc_inciso2_registration = $this->id;
@@ -395,7 +396,7 @@ class Plugin extends \MapasCulturais\Plugin
         $app->hook('GET(aldirblanc.<<*>>):before', function() use ($plugin, $app) {
             if ($app->user->is('mediador')) {
                 $limit = 1000;
-                
+
                 $plugin->_config['inciso1_limite'] = $limit;
                 $plugin->_config['inciso2_limite'] = $limit;
             }
@@ -414,8 +415,8 @@ class Plugin extends \MapasCulturais\Plugin
             $opportunities_ids[] = $plugin->config['inciso1_opportunity_id'];
 
             $opportunities = $app->repo('Opportunity')->findBy(['id' => $opportunities_ids]);
-            
-            foreach($opportunities as $opportunity) { 
+
+            foreach($opportunities as $opportunity) {
                 if($opportunity->canUser('@control')) {
                     $_SESSION['mapasculturais.auth.redirect_path'] = $app->createUrl('panel', 'index');
                 }
@@ -430,8 +431,8 @@ class Plugin extends \MapasCulturais\Plugin
             if (!$requestedOpportunity) {
                 return;
             }
-            $can_view = $requestedOpportunity->canUser('@control') || 
-                        $requestedOpportunity->canUser('viewEvaluations') || 
+            $can_view = $requestedOpportunity->canUser('@control') ||
+                        $requestedOpportunity->canUser('viewEvaluations') ||
                         $requestedOpportunity->canUser('evaluateRegistrations');
             if(!$can_view && in_array($requestedOpportunity->id,$opportunities_ids) ) {
                 $url = $app->createUrl('aldirblanc', 'cadastro');
@@ -446,8 +447,8 @@ class Plugin extends \MapasCulturais\Plugin
             if (!$requestedOpportunity) {
                 return;
             }
-            $can_view = $requestedOpportunity->canUser('@control') || 
-                        $requestedOpportunity->canUser('viewEvaluations') || 
+            $can_view = $requestedOpportunity->canUser('@control') ||
+                        $requestedOpportunity->canUser('viewEvaluations') ||
                         $requestedOpportunity->canUser('evaluateRegistrations');
 
             if(!$can_view && in_array($requestedOpportunity->id,$opportunities_ids) ) {
@@ -455,7 +456,7 @@ class Plugin extends \MapasCulturais\Plugin
                 $app->redirect($url);
             }
         });
-        
+
 
     }
 
@@ -470,7 +471,7 @@ class Plugin extends \MapasCulturais\Plugin
 
         $app->registerController('aldirblanc', 'AldirBlanc\Controllers\AldirBlanc');
         $app->registerController('remessas', 'AldirBlanc\Controllers\Remessas');
-        
+
         // registra o role para mediadores
         $role_definition = new Role('mediador', 'Mediador', 'Mediadores', true, function($user){ return $user->is('admin'); });
         $app->registerRole($role_definition);
@@ -509,7 +510,7 @@ class Plugin extends \MapasCulturais\Plugin
         ]);
 
         /**
-         * Tipo de usuário na aldir 
+         * Tipo de usuário na aldir
          * @var string
          */
         $this->registerUserMetadata('aldirblanc_tipo_usuario', [
@@ -557,7 +558,7 @@ class Plugin extends \MapasCulturais\Plugin
             'type' => 'number',
             'private' => true,
         ]);
-        
+
         if($this->config['inciso1_enabled']){
             /**
              * Id da inscrição no insico I
@@ -608,7 +609,7 @@ class Plugin extends \MapasCulturais\Plugin
             return ;
         }
 
-        $idProjectFromConfig = $this->config['project_id'] ? $this->config['project_id'] : null; 
+        $idProjectFromConfig = $this->config['project_id'] ? $this->config['project_id'] : null;
 
         if(!$idProjectFromConfig) {
             throw new \Exception('Defina a configuração "project_id" no config.php["AldirBlanc"] ');
@@ -667,7 +668,7 @@ class Plugin extends \MapasCulturais\Plugin
 
             $this->createOpportunity($params,1,$project);
 
-        } 
+        }
 
     }
 
@@ -680,7 +681,7 @@ class Plugin extends \MapasCulturais\Plugin
             );
         }
 
-        $idProjectFromConfig = $this->config['project_id'] ? $this->config['project_id'] : null; 
+        $idProjectFromConfig = $this->config['project_id'] ? $this->config['project_id'] : null;
 
         if(!$idProjectFromConfig) {
             throw new \Exception('Defina a configuração "project_id" no config.php["AldirBlanc"] ');
@@ -724,7 +725,7 @@ class Plugin extends \MapasCulturais\Plugin
 
             $city['project_name'] = ($city['name'] === 'NOME PADRÃO') ? $this->config['prefix_project'] . "{$city['city']}" : $city['name'];
             $city['name'] = ($city['name'] === 'NOME PADRÃO') ? "Lei Aldir Blanc - Inciso II | {$city['city']}" : $city['name'];
-            
+
             if(isset($city['registrationTo']) ) {
                 if(! $this->checkIfIsValidDateString($city['registrationTo'])) {
                     throw new \Exception('Campo registrationTo não é uma data valida');
@@ -779,7 +780,7 @@ class Plugin extends \MapasCulturais\Plugin
     public function checkIfIsValidDateString(string $dateString) {
         if (\DateTime::createFromFormat('Y-m-d', $dateString) !== FALSE) {
             return true;
-        } 
+        }
 
         return false;
     }
@@ -812,7 +813,7 @@ class Plugin extends \MapasCulturais\Plugin
             if($params['seal']) {
                 $this->setSealToEntity( $params['seal'] , $opportunityProject);
             }
-    
+
             if($params['avatar']) {
                 $this->setAvatarToEntity($params['avatar'] , $opportunityProject);
             }
@@ -831,7 +832,7 @@ class Plugin extends \MapasCulturais\Plugin
         if($inciso == 2) {
             $opportunity->aldirblanc_city = $params['city'];
         }
-        
+
         $opportunity->save();
 
         $evaluationMethodConfiguration = new \MapasCulturais\Entities\EvaluationMethodConfiguration();
@@ -860,11 +861,11 @@ class Plugin extends \MapasCulturais\Plugin
         if($params['seal']) {
             $this->setSealToEntity( $params['seal'] , $opportunity);
         }
-        
+
 
         if($params['avatar']) {
             $this->setAvatarToEntity($params['avatar'] , $opportunity);
-        }   
+        }
 
         $app->enableAccessControl();
         $app->em->flush();
@@ -897,11 +898,11 @@ class Plugin extends \MapasCulturais\Plugin
         foreach ($opportunity->registrationFieldConfigurations as $field) {
             $field_ids[] = "field_{$field->id}";
         }
-        
+
         foreach ($opportunity->registrationFileConfigurations as $file) {
             $field_ids[] = "file_{$file->id}";
         }
-        
+
         $opportunity->aldirBlancFields = $field_ids;
 
         $opportunity->save();
@@ -921,19 +922,19 @@ class Plugin extends \MapasCulturais\Plugin
         copy($filePath, $bakFileName);
 
         $file_class_name = $entity->getFileClassName();
-        
+
         $entityFile = new $file_class_name([
             "name"=> $auxFileName,
             "type"=> mime_content_type($bakFileName),
             "tmp_name"=> $bakFileName,
             "error"=> 0,
             "size"=> filesize($bakFileName)
-        ]); 
+        ]);
 
         $entityFile->description = "AldirBlanc";
         $entityFile->group = "avatar";
         $entityFile->owner = $entity;
-        $entityFile->save();   
+        $entityFile->save();
         $app->em->flush();
     }
 
