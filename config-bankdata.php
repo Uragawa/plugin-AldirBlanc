@@ -407,5 +407,19 @@ return [
 			], //"9999999-D"
 		],
 		//"652" => [ /* deixar sem regra: possível erro do usuário */ "name" => "Itaú Unibanco Holding S.A."],
-	]
+	],
+	"fields" => [
+		"names" => [ // preencher de acordo com os nomes dos campos nos diversos estados
+			"accountType" => [],
+			"bank" => [],
+			"branch" => [],
+			"account" => [],
+			"operation" => [],
+			"payment" => [],
+		],
+		"defaults" => [ // preencher de acordo com as regras de cada estado
+			"bank" => "",
+			"operation" => 0,
+		],
+	],
 ];

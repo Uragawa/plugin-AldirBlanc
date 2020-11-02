@@ -1932,9 +1932,6 @@ class Remessas extends \MapasCulturais\Controllers\Registration
         // percorre as oportunidades
         foreach ($opportunities as $opportunity) {
             // pega inscrições via DQL seguindo recomendações do Doctrine para grandes volumes
-            /**
-             * TODO: selecionar corretamente as inscrições por homologação + avaliação DataPrev
-             */
             $dql = "SELECT e FROM MapasCulturais\Entities\Registration e
                              WHERE e.status IN (1, 10) AND e.opportunity=:oppId";
             $query = $app->em->createQuery($dql);
@@ -2025,9 +2022,6 @@ public function ALL_addressReport()
     $config = $this->config["config-mci460"];
     $address = $config["fieldMap"]["endereco"];
     foreach ($opportunities as $opportunity) {
-        /**
-         * TODO: selecionar corretamente as inscrições por homologação + avaliação DataPrev
-         */
         // pega inscrições via DQL seguindo recomendações do Doctrine para grandes volumes
         $dql = "SELECT e FROM MapasCulturais\Entities\Registration e
                          WHERE e.status IN (1, 10) AND e.opportunity=:oppId";
@@ -2170,12 +2164,7 @@ public function ALL_addressReport()
              */
             $this->registerRegistrationMetadata($opportunity);
             $interestFields = $this->findFields([
-                //["target" => "type", "matching" => ["TIPO DE CONTA BANCÁRIA:", "TIPO DE CONTA BANCÁRIA"]],
-                ["target" => "bank", "matching" => ["BANCO:"]],
-                ["target" => "branch", "matching" => ["AGÊNCIA", "Número de agência:"]],
-                ["target" => "account", "matching" => ["NÚMERO DA CONTA:", "Número de conta:"]],
-                ["target" => "operation", "matching" => ["NÚMERO DA OPERAÇÃO SE HOUVER", "Número de operação (se houver):"]],
-                ["target" => "payment", "matching" => ["FORMA PARA RECEBIMENTO DO BENEFÍCIO:"]],
+                "bank", "branch", "account", "operation", "payment"
             ], $opportunity->registrationFieldConfigurations);
             $regsOpp[$opportunity->id] = 0;
             // processa inscrições
@@ -2191,15 +2180,23 @@ public function ALL_addressReport()
                     }
                 }
                 // pega dados dos campos de interesse
-                $bank = $interestFields["bank"];
-                $bank = $registration->$bank;
+                if (isset($interestFields["bank"])) {
+                    $bank = $interestFields["bank"];
+                    $bank = $registration->$bank;
+                } else {
+                    $bank = $this->config["config-bankdata"]["fields"]["defaults"]["bank"];
+                }
                 $bankNumber = $this->numberBank($bank);
                 $branch = $interestFields["branch"];
                 $branch = $registration->$branch;
                 $account = $interestFields["account"];
                 $account = $registration->$account;
-                $operation = $interestFields["operation"];
-                $operation = $registration->$operation;
+                if (isset($interestFields["operation"])) {
+                    $operation = $interestFields["operation"];
+                    $operation = $registration->$operation;
+                } else {
+                    $operation = $this->config["config-bankdata"]["fields"]["defaults"]["operation"];
+                }
                 // registra bancos sem código no config-bankdata.php
                 if ((strlen($bank) != 0) && (strlen($bankNumber) == 0)) {
                     $missingBanks[$bank] = true;
@@ -2304,32 +2301,23 @@ public function ALL_addressReport()
     }
 
     /**
-     * Encontra os campos especificados pelos parâmetros. Exemplo:
-     * $this->findFields([
-     *      [
-     *          "target" => "type",
-     *          "matching" => [
-     *              "TIPO DE CONTA BANCÁRIA:",
-     *              "TIPO DE CONTA BANCÁRIA"
-     *          ]
-     *      ]
-     * ], $opportunity->registrationFieldConfigurations);
-     * Retornará um dicionário ["type" => "<field_id>"] para o primeiro campo de
-     * $opportunity->registrationFieldConfigurations cujo nome for algum dos
-     * nomes passados em "matching".
+     * Encontra os campos solicitados de acordo com o config-bankdata.
+     * Retornará um dicionário com entradas como ["<name>" => "<field_id>"].
      */
-    private function findFields($fieldSpecs, $fieldConfigs)
+    private function findFields($fieldNames, $fieldConfigs)
     {
         $fields = [];
+        $bankConfig = $this->config["config-bankdata"]["fields"];
         foreach ($fieldConfigs as $field) {
             $title = trim($field->title);
-            foreach ($fieldSpecs as $spec) {
-                if (in_array($title, $spec["matching"])) {
-                    $fields[$spec["target"]] = "field_" . $field->id;
+            foreach ($fieldNames as $name) {
+                if (isset($bankConfig["names"][$name]) &&
+                    in_array($title, $bankConfig["names"][$name])) {
+                    $fields[$name] = "field_" . $field->id;
                     break;
                 }
             }
-            if (sizeof($fields) > sizeof($fieldSpecs)) {
+            if (sizeof($fields) > sizeof($fieldNames)) {
                 break;
             }
         }
@@ -2671,6 +2659,12 @@ public function ALL_addressReport()
     {
         $hasAccount = $fieldMap["hasAccount"];
         $wantsAccount = $fieldMap["wantsAccount"];
+        if ($this->config["exportador_requer_homologacao"] &&
+            !in_array($registration->consolidatedResult, [
+                "10", "homologado, validado por Dataprev"
+        ])) {
+            return false;
+        }
         return (($registration->$hasAccount != "SIM") &&
                 ($registration->$wantsAccount != null) &&
                 (str_starts_with($registration->$wantsAccount, "CONTA")));
@@ -2779,7 +2773,9 @@ public function ALL_addressReport()
     private function mci460Details($config, $registration, $extraData)
     {
         $out = [];
+        // itera sobre definições de detalhes
         foreach ($config["details"] as $detail) {
+            // pula detalhes cuja condição o registro não atende
             if (isset($detail["condition"])) {
                 if (!$this->mci460Thunk2($detail["condition"], $config,
                                          $registration)) {
@@ -2787,16 +2783,19 @@ public function ALL_addressReport()
                 }
             }
             $line = "";
+            // itera sobre definições de campos
             foreach ($detail["fields"] as $field) {
+                // processa campos variáveis
                 if (!isset($field["default"])) {
                     if ($field["type"] === "meta") {
                         $line .= $this->mci460MetaField($config, $field, $registration);
                         continue;
                     }
                     $fieldName = $field["name"];
+                    // campos externos (por exemplo, o contador de clientes)
                     if (!isset($config["fieldMap"][$fieldName])) {
                         $field["default"] = $extraData[$fieldName];
-                    } else {
+                    } else { // campos do banco de dados
                         $fieldName = $config["fieldMap"][$fieldName];
                         $field["default"] = isset($field["function"]) ?
                                             $this->mci460Thunk2($field["function"], $registration->$fieldName, null) :
