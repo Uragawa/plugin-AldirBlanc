@@ -153,16 +153,20 @@ class Plugin extends \MapasCulturais\Plugin
         $app->hook('template(opportunity.single.header-inscritos):end', function () use($plugin, $app){
             $inciso1Ids = [$plugin->config['inciso1_opportunity_id']];
             $inciso2Ids = array_values($plugin->config['inciso2_opportunity_ids']);
-            $inciso3Ids = $plugin->config['inciso3_opportunity_ids'];
+            $inciso3Ids = [];//$plugin->config['inciso3_opportunity_ids'];
             $opportunities_ids = array_merge($inciso1Ids, $inciso2Ids, $inciso3Ids);
             $requestedOpportunity = $this->controller->requestedEntity; //Tive que chamar o controller para poder requisitar a entity
             $opportunity = $requestedOpportunity->id;
 
             $regSelected = $app->repo('Registration')->findBy([
-                'status' => 10,
+                'status' => 1,
                 'opportunity' => $opportunity
             ]);
 
+            $existsSelected = false;
+            if($regSelected){
+                $existsSelected = true;
+            }
 
             if(($requestedOpportunity->canUser('@control')) && in_array($requestedOpportunity->id,$opportunities_ids) ) {
                 $app->view->enqueueScript('app', 'aldirblanc', 'aldirblanc/app.js');
@@ -179,7 +183,7 @@ class Plugin extends \MapasCulturais\Plugin
                 }
 
                 if($regSelected){
-                    $this->part('aldirblanc/cnab240-button', ['inciso' => $inciso, 'opportunity' => $opportunity]);
+                    $this->part('aldirblanc/cnab240-button', ['inciso' => $inciso, 'opportunity' => $opportunity, 'existsSelected' => $existsSelected]);
                 }
 
             }
